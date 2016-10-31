@@ -44,14 +44,32 @@
     <ClCompile Include="GeneratedFiles\Release\moc_liboef.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="dsoframer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dsofdocobj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="liboef_global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dsofdocobj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="liboef.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="dsoframer.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
