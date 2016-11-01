@@ -2,19 +2,6 @@
  * UTILITIES.H
  *
  * DSOFramer: Common Utilities and Macros (Shared)
- *
- *  Copyright ?999-2004; Microsoft Corporation. All rights reserved.
- *  Written by Microsoft Developer Support Office Integration (PSS DSOI)
- * 
- *  This code is provided via KB 311765 as a sample. It is not a formal
- *  product and has not been tested with all containers or servers. Use it
- *  for educational purposes only. See the EULA.TXT file included in the
- *  KB download for full terms of use and restrictions.
- *
- *  THIS CODE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, 
- *  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- *  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
- *
  ***************************************************************************/
 #ifndef DS_UTILITIES_H
 #define DS_UTILITIES_H

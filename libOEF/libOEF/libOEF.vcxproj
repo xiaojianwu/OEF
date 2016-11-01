@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dsofdocobj.h" />
+    <ClInclude Include="ipprevw.h" />
     <ClInclude Include="utilities.h" />
     <CustomBuild Include="dsoframer.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

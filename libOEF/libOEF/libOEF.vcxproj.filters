@@ -67,6 +67,9 @@
     <ClInclude Include="utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ipprevw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="liboef.h">
