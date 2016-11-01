@@ -101,14 +101,14 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
  // very unlikely. However, that could change sometime, so better to be safe than sorry.
 	EnterCriticalSection(&v_csecThreadSynch);
 
-	if (GetClassInfo(v_hModule, "DSOFramerDocWnd", &wndclass) == 0)
+	if (GetClassInfo(v_hModule, L"DSOFramerDocWnd", &wndclass) == 0)
 	{
 		memset(&wndclass, 0, sizeof(WNDCLASS));
 		wndclass.style          = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
 		wndclass.lpfnWndProc    = CDsoDocObject::FrameWindowProc;
 		wndclass.hInstance      = v_hModule;
 		wndclass.hCursor        = LoadCursor(NULL, IDC_ARROW);
-		wndclass.lpszClassName  = "DSOFramerDocWnd";
+		wndclass.lpszClassName  = L"DSOFramerDocWnd";
 		if (RegisterClass(&wndclass) == 0)
 			hr = E_WIN32_LASTERROR;
 	}
@@ -126,7 +126,7 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
         {m_rcViewRect.left = 0; m_rcViewRect.right = 0;}
 
  // Create our site window at the give location (we are child of the control window)...
-	m_hwnd = CreateWindowEx(0, "DSOFramerDocWnd", NULL, WS_CHILD,
+	m_hwnd = CreateWindowEx(0, L"DSOFramerDocWnd", NULL, WS_CHILD,
                     m_rcViewRect.left, m_rcViewRect.top,
 					(m_rcViewRect.right - m_rcViewRect.left),
 					(m_rcViewRect.bottom - m_rcViewRect.top),
@@ -340,12 +340,12 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
 	}
 
  // Check for IE cache items since these are read-only as far as user is concerned...
-    if (FIsIECacheFile(pwszFile))
-    {
-        pbndopts->grfMode &= ~(STGM_READWRITE);
-        pbndopts->grfMode &= ~(STGM_WRITE);
-        pbndopts->grfMode |= STGM_READ;
-    }
+    //if (FIsIECacheFile(pwszFile))
+    //{
+    //    pbndopts->grfMode &= ~(STGM_READWRITE);
+    //    pbndopts->grfMode &= ~(STGM_WRITE);
+    //    pbndopts->grfMode |= STGM_READ;
+    //}
 
  // First, we try to bind by moniker (same as IE). We'll need a bind context 
  // and a file moniker for the orginal source...
@@ -452,67 +452,67 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
 //  The default is to open read-only with URLMON. If client wants read-write,
 //  we will try MSDAIPP for DAV first, then MSDAIPP for FPSE/WSS/SPS.
 //
-STDMETHODIMP CDsoDocObject::CreateFromURL(LPWSTR pwszUrlFile, REFCLSID rclsid, LPBIND_OPTS pbndopts, LPWSTR pwszUserName, LPWSTR pwszPassword)
-{
-	HRESULT	   hr;
-    BOOL       fReadOnly;
-	LPWSTR     pwszTempFile;
-	IStream   *pstmWebResource = NULL;
-
- // First, a sanity check on the parameters passed...
-    if ((pwszUrlFile == NULL) || (pbndopts == NULL))
-        return E_INVALIDARG;
-
-	TRACE2("CDsoDocObject::CreateFromURL(%S, %x)\n", pwszUrlFile, pbndopts->grfMode);
-
- // Get a temp path for the download...
-	if (!GetTempPathForURLDownload(pwszUrlFile, &pwszTempFile))
-		return E_ACCESSDENIED;
-
- // Save out the user name and password (if provided) for IAuthenticate...
-	if (pwszUserName)
-	{
-		SAFE_FREESTRING(m_pwszUsername);
-		m_pwszUsername = DsoCopyString(pwszUserName);
-
-		SAFE_FREESTRING(m_pwszPassword);
-		m_pwszPassword = DsoCopyString(pwszPassword);
-	}
-
- // Determine if they want to open read-only using URLMON or read-write using MSDAIPP...
-    fReadOnly = ((pbndopts->grfMode & STGM_WRITE) == 0) &&
-                ((pbndopts->grfMode & STGM_READWRITE) == 0);
-
-    if (fReadOnly) // If using URLMON...
-    {
-        hr = URLDownloadFile((IUnknown*)&m_xAuthenticate, pwszUrlFile, pwszTempFile);
-    }
-    else // Otherwise we need access to MSDAIPP for writable stream...
-    {
-        hr = IPPDownloadWebResource(pwszUrlFile, pwszTempFile, &pstmWebResource);
-    }
-
- // If all goes well with the download, we can then open the temp file for write access to
- // use as local file during the editing. Then we can save back on the stream if requested.
-    if (SUCCEEDED(hr))
-    {
-        BIND_OPTS bopts = {sizeof(BIND_OPTS), BIND_MAYBOTHERUSER, STGM_READWRITE|STGM_SHARE_EXCLUSIVE, 10000};
-        hr = CreateFromFile(pwszTempFile, rclsid, &bopts);
-        if (SUCCEEDED(hr))
-        {
-			m_fOpenReadOnly = fReadOnly;
-            if (!m_fOpenReadOnly)
-            {
-			    m_pwszWebResource = DsoCopyString(pwszUrlFile);
-			    SAFE_SET_INTERFACE(m_pstmWebResource, pstmWebResource);
-            }
-        }
-    }
-
-    SAFE_RELEASE_INTERFACE(pstmWebResource);
-	DsoMemFree(pwszTempFile);
-	return hr;
-}
+//STDMETHODIMP CDsoDocObject::CreateFromURL(LPWSTR pwszUrlFile, REFCLSID rclsid, LPBIND_OPTS pbndopts, LPWSTR pwszUserName, LPWSTR pwszPassword)
+//{
+//	HRESULT	   hr;
+//    BOOL       fReadOnly;
+//	LPWSTR     pwszTempFile;
+//	IStream   *pstmWebResource = NULL;
+//
+// // First, a sanity check on the parameters passed...
+//    if ((pwszUrlFile == NULL) || (pbndopts == NULL))
+//        return E_INVALIDARG;
+//
+//	TRACE2("CDsoDocObject::CreateFromURL(%S, %x)\n", pwszUrlFile, pbndopts->grfMode);
+//
+// // Get a temp path for the download...
+//	if (!GetTempPathForURLDownload(pwszUrlFile, &pwszTempFile))
+//		return E_ACCESSDENIED;
+//
+// // Save out the user name and password (if provided) for IAuthenticate...
+//	if (pwszUserName)
+//	{
+//		SAFE_FREESTRING(m_pwszUsername);
+//		m_pwszUsername = DsoCopyString(pwszUserName);
+//
+//		SAFE_FREESTRING(m_pwszPassword);
+//		m_pwszPassword = DsoCopyString(pwszPassword);
+//	}
+//
+// // Determine if they want to open read-only using URLMON or read-write using MSDAIPP...
+//    fReadOnly = ((pbndopts->grfMode & STGM_WRITE) == 0) &&
+//                ((pbndopts->grfMode & STGM_READWRITE) == 0);
+//
+//    if (fReadOnly) // If using URLMON...
+//    {
+//        hr = URLDownloadFile((IUnknown*)&m_xAuthenticate, pwszUrlFile, pwszTempFile);
+//    }
+//    else // Otherwise we need access to MSDAIPP for writable stream...
+//    {
+//        hr = IPPDownloadWebResource(pwszUrlFile, pwszTempFile, &pstmWebResource);
+//    }
+//
+// // If all goes well with the download, we can then open the temp file for write access to
+// // use as local file during the editing. Then we can save back on the stream if requested.
+//    if (SUCCEEDED(hr))
+//    {
+//        BIND_OPTS bopts = {sizeof(BIND_OPTS), BIND_MAYBOTHERUSER, STGM_READWRITE|STGM_SHARE_EXCLUSIVE, 10000};
+//        hr = CreateFromFile(pwszTempFile, rclsid, &bopts);
+//        if (SUCCEEDED(hr))
+//        {
+//			m_fOpenReadOnly = fReadOnly;
+//            if (!m_fOpenReadOnly)
+//            {
+//			    m_pwszWebResource = DsoCopyString(pwszUrlFile);
+//			    SAFE_SET_INTERFACE(m_pstmWebResource, pstmWebResource);
+//            }
+//        }
+//    }
+//
+//    SAFE_RELEASE_INTERFACE(pstmWebResource);
+//	DsoMemFree(pwszTempFile);
+//	return hr;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::CreateFromRunningObject
@@ -780,15 +780,15 @@ STDMETHODIMP CDsoDocObject::Save()
     if (!IsReadOnly())
     {
      // If we have a URL (write-access) resource, do MSDAIPP save...
-	    if (m_pstmWebResource)
-	    {
-		    hr = SaveToURL(NULL, TRUE, NULL, NULL);
-	    }
-     // Else if it is local file, do a local save...
-	    else if (m_pwszSourceFile)
-	    {
+	    //if (m_pstmWebResource)
+	    //{
+		   // hr = SaveToURL(NULL, TRUE, NULL, NULL);
+	    //}
+     //// Else if it is local file, do a local save...
+	    //else if (m_pwszSourceFile)
+	    //{
 		    hr = SaveToFile(NULL, TRUE);
-	    }
+	    //}
     }
 
 	return hr;
@@ -972,112 +972,112 @@ STDMETHODIMP CDsoDocObject::SaveToFile(LPWSTR pwszFile, BOOL fOverwriteFile)
 	return hr;
 }
 
-STDMETHODIMP CDsoDocObject::SaveToURL(LPWSTR pwszURL, BOOL fOverwriteFile, LPWSTR pwszUserName, LPWSTR pwszPassword)
-{
-	HRESULT	 hr = DSO_E_DOCUMENTREADONLY;
-
- // If we have no URL to save to and no previously open web stream, fail...
-	if ((!pwszURL) && (!m_pstmWebResource))
-		return hr;
-
- // Save out the user name and password (if provided) for IAuthenticate...
-	if (pwszUserName)
-	{
-		SAFE_FREESTRING(m_pwszUsername);
-		m_pwszUsername = DsoCopyString(pwszUserName);
-
-		SAFE_FREESTRING(m_pwszPassword);
-		m_pwszPassword = DsoCopyString(pwszPassword);
-	}
-
-	if ((pwszURL) && (m_pwszWebResource) && 
-		(DsoCompareStringsEx(pwszURL, -1, m_pwszWebResource, -1) == CSTR_EQUAL))
-		pwszURL = NULL;
-
-	if (pwszURL)
-	{
-		IStream  *pstmT = NULL;
-		LPWSTR    pwszFullUrl = NULL;
-		LPWSTR    pwszTempFile;
-
-		IStream  *pstmBkupStm;
-		IStorage *pstgBkupStg;
-		LPWSTR    pwszBkupFile, pwszBkupUrl;
-        UINT      idxBkup;
-
-		if (!GetTempPathForURLDownload(pwszURL, &pwszTempFile))
-			return E_INVALIDARG;
-
-		if (ValidateFileExtension(pwszURL, &pwszFullUrl))
-			pwszURL = pwszFullUrl;
-
-	 // We are going to save out the current file info in case of 
-	 // an error we can restore it to do native saves back to open location...
-		pstmBkupStm  = m_pstmWebResource;  m_pstmWebResource  = NULL;
-		pwszBkupUrl  = m_pwszWebResource;  m_pwszWebResource  = NULL;
-		pwszBkupFile = m_pwszSourceFile;   m_pwszSourceFile   = NULL;
-		pstgBkupStg  = m_pstgSourceFile;   m_pstgSourceFile   = NULL;
-        idxBkup      = m_idxSourceName;    m_idxSourceName    = 0;
-
-	 // Save the object to a new (temp) file on the local drive...
-		if (SUCCEEDED(hr = SaveToFile(pwszTempFile, TRUE)))
-		{
-		 // Then upload from that file...
-			hr = IPPUploadWebResource(pwszTempFile, &pstmT, pwszURL, fOverwriteFile);
-		}
-
-	 // If both calls succeed, we can free the old file/url location info
-	 // and save the new information, otherwise restore the old info from backup...
-		if (SUCCEEDED(hr))
-		{
-			SAFE_RELEASE_INTERFACE(pstgBkupStg);
-
-			if ((pstmBkupStm) && (pwszBkupFile))
-				FPerformShellOp(FO_DELETE, pwszBkupFile, NULL);
-
-			SAFE_RELEASE_INTERFACE(pstmBkupStm);
-			SAFE_FREESTRING(pwszBkupUrl);
-			SAFE_FREESTRING(pwszBkupFile);
-
-			m_pstmWebResource = pstmT;
-			m_pwszWebResource = DsoCopyString(pwszURL);
-			//m_pwszSourceFile already saved in SaveStorageToFile
-			//m_pstgSourceFile already saved in SaveStorageToFile
-            //m_idxSourceName already calced in SaveStorageToFile;
-
-		}
-		else
-		{
-			if (m_pstgSourceFile)
-				m_pstgSourceFile->Release();
-
-			if (m_pwszSourceFile)
-			{
-				FPerformShellOp(FO_DELETE, m_pwszSourceFile, NULL);
-				DsoMemFree(m_pwszSourceFile);
-			}
-
-			m_pstmWebResource  = pstmBkupStm;
-			m_pwszWebResource  = pwszBkupUrl;
-			m_pwszSourceFile   = pwszBkupFile;
-			m_pstgSourceFile   = pstgBkupStg;
-            m_idxSourceName    = idxBkup;
-		}
-
-		if (pwszFullUrl)
-			DsoMemFree(pwszFullUrl);
-
-		DsoMemFree(pwszTempFile);
-
-	}
-	else if ((m_pstmWebResource) && (m_pwszSourceFile))
-	{
-        if (SUCCEEDED(hr = SaveToFile(NULL, TRUE)))
-		    hr = IPPUploadWebResource(m_pwszSourceFile, &m_pstmWebResource, NULL, TRUE);
-	}
-
-	return hr;
-}
+//STDMETHODIMP CDsoDocObject::SaveToURL(LPWSTR pwszURL, BOOL fOverwriteFile, LPWSTR pwszUserName, LPWSTR pwszPassword)
+//{
+//	HRESULT	 hr = DSO_E_DOCUMENTREADONLY;
+//
+// // If we have no URL to save to and no previously open web stream, fail...
+//	if ((!pwszURL) && (!m_pstmWebResource))
+//		return hr;
+//
+// // Save out the user name and password (if provided) for IAuthenticate...
+//	if (pwszUserName)
+//	{
+//		SAFE_FREESTRING(m_pwszUsername);
+//		m_pwszUsername = DsoCopyString(pwszUserName);
+//
+//		SAFE_FREESTRING(m_pwszPassword);
+//		m_pwszPassword = DsoCopyString(pwszPassword);
+//	}
+//
+//	if ((pwszURL) && (m_pwszWebResource) && 
+//		(DsoCompareStringsEx(pwszURL, -1, m_pwszWebResource, -1) == CSTR_EQUAL))
+//		pwszURL = NULL;
+//
+//	if (pwszURL)
+//	{
+//		IStream  *pstmT = NULL;
+//		LPWSTR    pwszFullUrl = NULL;
+//		LPWSTR    pwszTempFile;
+//
+//		IStream  *pstmBkupStm;
+//		IStorage *pstgBkupStg;
+//		LPWSTR    pwszBkupFile, pwszBkupUrl;
+//        UINT      idxBkup;
+//
+//		if (!GetTempPathForURLDownload(pwszURL, &pwszTempFile))
+//			return E_INVALIDARG;
+//
+//		if (ValidateFileExtension(pwszURL, &pwszFullUrl))
+//			pwszURL = pwszFullUrl;
+//
+//	 // We are going to save out the current file info in case of 
+//	 // an error we can restore it to do native saves back to open location...
+//		pstmBkupStm  = m_pstmWebResource;  m_pstmWebResource  = NULL;
+//		pwszBkupUrl  = m_pwszWebResource;  m_pwszWebResource  = NULL;
+//		pwszBkupFile = m_pwszSourceFile;   m_pwszSourceFile   = NULL;
+//		pstgBkupStg  = m_pstgSourceFile;   m_pstgSourceFile   = NULL;
+//        idxBkup      = m_idxSourceName;    m_idxSourceName    = 0;
+//
+//	 // Save the object to a new (temp) file on the local drive...
+//		if (SUCCEEDED(hr = SaveToFile(pwszTempFile, TRUE)))
+//		{
+//		 // Then upload from that file...
+//			hr = IPPUploadWebResource(pwszTempFile, &pstmT, pwszURL, fOverwriteFile);
+//		}
+//
+//	 // If both calls succeed, we can free the old file/url location info
+//	 // and save the new information, otherwise restore the old info from backup...
+//		if (SUCCEEDED(hr))
+//		{
+//			SAFE_RELEASE_INTERFACE(pstgBkupStg);
+//
+//			if ((pstmBkupStm) && (pwszBkupFile))
+//				FPerformShellOp(FO_DELETE, pwszBkupFile, NULL);
+//
+//			SAFE_RELEASE_INTERFACE(pstmBkupStm);
+//			SAFE_FREESTRING(pwszBkupUrl);
+//			SAFE_FREESTRING(pwszBkupFile);
+//
+//			m_pstmWebResource = pstmT;
+//			m_pwszWebResource = DsoCopyString(pwszURL);
+//			//m_pwszSourceFile already saved in SaveStorageToFile
+//			//m_pstgSourceFile already saved in SaveStorageToFile
+//            //m_idxSourceName already calced in SaveStorageToFile;
+//
+//		}
+//		else
+//		{
+//			if (m_pstgSourceFile)
+//				m_pstgSourceFile->Release();
+//
+//			if (m_pwszSourceFile)
+//			{
+//				FPerformShellOp(FO_DELETE, m_pwszSourceFile, NULL);
+//				DsoMemFree(m_pwszSourceFile);
+//			}
+//
+//			m_pstmWebResource  = pstmBkupStm;
+//			m_pwszWebResource  = pwszBkupUrl;
+//			m_pwszSourceFile   = pwszBkupFile;
+//			m_pstgSourceFile   = pstgBkupStg;
+//            m_idxSourceName    = idxBkup;
+//		}
+//
+//		if (pwszFullUrl)
+//			DsoMemFree(pwszFullUrl);
+//
+//		DsoMemFree(pwszTempFile);
+//
+//	}
+//	else if ((m_pstmWebResource) && (m_pwszSourceFile))
+//	{
+//        if (SUCCEEDED(hr = SaveToFile(NULL, TRUE)))
+//		    hr = IPPUploadWebResource(m_pwszSourceFile, &m_pstmWebResource, NULL, TRUE);
+//	}
+//
+//	return hr;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::DoOleCommand
@@ -1417,7 +1417,7 @@ STDMETHODIMP CDsoDocObject::CreateObjectStorage(REFCLSID rclsid)
 	HRESULT hr;
 	LPWSTR pwszName;
 	DWORD dwid;
-	CHAR szbuf[256];
+	WCHAR szbuf[256];
 
 	if ((!m_pstgroot)) return E_UNEXPECTED;
 
@@ -1427,10 +1427,11 @@ STDMETHODIMP CDsoDocObject::CreateObjectStorage(REFCLSID rclsid)
 
  // We make a fake object storage name...
 	dwid = ((rclsid.Data1)|GetTickCount());
-	wsprintf(szbuf, "OLEDocument%X", dwid);
+	wsprintf(szbuf, L"OLEDocument%X", dwid);
 
-	if (!(pwszName = DsoConvertToLPWSTR(szbuf)))
-		return E_OUTOFMEMORY;
+	//if (!(pwszName = DsoConvertToLPWSTR(szbuf)))
+	//	return E_OUTOFMEMORY;
+	pwszName = szbuf;
 
  // Create the sub-storage...
 	hr = m_pstgroot->CreateStorage(pwszName,
@@ -1441,12 +1442,12 @@ STDMETHODIMP CDsoDocObject::CreateObjectStorage(REFCLSID rclsid)
 	if (FAILED(hr)) return hr;
 
  // We'll also create a stream for OLE view settings (non-critical)...
-	if (pwszName = DsoConvertToLPWSTR(szbuf))
-	{
+	//if (pwszName = DsoConvertToLPWSTR(szbuf))
+	//{
 		m_pstgroot->CreateStream(pwszName,
 			STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, 0, 0, &m_pstmview);
 		DsoMemFree(pwszName);
-	}
+	//}
 
  // Finally, write out the CLSID for the new substorage...
 	hr = WriteClassStg(m_pstgfile, rclsid);
@@ -1605,7 +1606,7 @@ STDMETHODIMP CDsoDocObject::SaveDocToFile(LPWSTR pwszFullName, BOOL fKeepLock)
 STDMETHODIMP CDsoDocObject::ValidateDocObjectServer(REFCLSID rclsid)
 {
 	HRESULT hr = DSO_E_INVALIDSERVER;
-	CHAR  szKeyCheck[256];
+	WCHAR  szKeyCheck[256];
 	LPSTR pszClsid;
 	HKEY  hkey;
 
@@ -1617,7 +1618,7 @@ STDMETHODIMP CDsoDocObject::ValidateDocObjectServer(REFCLSID rclsid)
  // Convert the CLSID to a string and check for DocObject sub key...
 	if (pszClsid = DsoCLSIDtoLPSTR(rclsid))
 	{
-		wsprintf(szKeyCheck, "CLSID\\%s\\DocObject", pszClsid);
+		wsprintf(szKeyCheck, L"CLSID\\%s\\DocObject", pszClsid);
 
 		if (RegOpenKeyEx(HKEY_CLASSES_ROOT, szKeyCheck, 0, KEY_READ, &hkey) == ERROR_SUCCESS)
 		{
@@ -1641,11 +1642,11 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
 {
 	DWORD dwType, dwSize;
     LPWSTR pwszExt = NULL;
-    LPWSTR pwszType = NULL;
-    LPSTR pszType = NULL;
+    //LPWSTR pwszType = NULL;
+    LPWSTR pszType = NULL;
     LPSTR pszClsid;
-	CHAR szkey[255];
-	CHAR szbuf[255];
+	WCHAR szkey[255];
+	WCHAR szbuf[255];
 	HKEY hk;
 
     if ((ppwszFileType == NULL) && (ppwszFileExt == NULL))
@@ -1654,10 +1655,10 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
     pszClsid = DsoCLSIDtoLPSTR(m_clsidObject);
     if (!pszClsid) return FALSE;
 
-	wsprintf(szkey, "CLSID\\%s\\DefaultExtension", pszClsid);
+	wsprintf(szkey, L"CLSID\\%s\\DefaultExtension", pszClsid);
 	if (RegOpenKeyEx(HKEY_CLASSES_ROOT, szkey, 0, KEY_READ, &hk) == ERROR_SUCCESS)
 	{
-		LPSTR pszT = szbuf; szbuf[0] = '\0'; dwSize = 255;
+		LPWSTR pszT = szbuf; szbuf[0] = '\0'; dwSize = 255;
 		if (RegQueryValueEx(hk, NULL, 0, &dwType, (BYTE*)pszT, &dwSize) == ERROR_SUCCESS)
 		{
 			while (*(pszT++) && (*pszT != ','))
@@ -1668,36 +1669,36 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
 
 			*pszT = '\0';
 		}
-		else lstrcpy(szbuf, ".ole");
+		else lstrcpy(szbuf, L".ole");
 
 		RegCloseKey(hk);
 	}
-	else lstrcpy(szbuf, ".ole");
+	else lstrcpy(szbuf, L".ole");
 
-	pwszExt = DsoConvertToLPWSTR(szbuf);
-    if (ppwszFileExt) *ppwszFileExt = pwszExt;
+	//pwszExt = DsoConvertToLPWSTR(szbuf);
+    if (ppwszFileExt) *ppwszFileExt = szbuf;
 
     if (ppwszFileType)
     {
         ULONG cb1, cb2;
         LPWSTR pwszCombined;
-        CHAR szUnknownType[255];
+        WCHAR szUnknownType[255];
 
         if (!(*pszType))
         {
             szUnknownType[0] = '\0';
-            wsprintf(szUnknownType, "Native Document (*%s)", szbuf);
+            wsprintf(szUnknownType, L"Native Document (*%s)", szbuf);
             pszType = szUnknownType;
         }
-        pwszType = DsoConvertToLPWSTR(pszType);
+        //pwszType = DsoConvertToLPWSTR(pszType);
 
         cb1 = lstrlenW(pwszExt);
-        cb2 = lstrlenW(pwszType);
+        cb2 = lstrlenW(pszType);
 
         pwszCombined = (LPWSTR)DsoMemAlloc(((cb1 + cb2 + 4) * sizeof(WCHAR)));
         if (pwszCombined)
         {
-            memcpy(&pwszCombined[0], pwszType,(cb2 * sizeof(WCHAR)));
+            memcpy(&pwszCombined[0], pszType,(cb2 * sizeof(WCHAR)));
             pwszCombined[cb2] = L'\0';
 
             pwszCombined[cb2 + 1] = L'*';
@@ -1705,10 +1706,10 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
             pwszCombined[cb2 + 2 + cb1] = L'\0';
             pwszCombined[cb2 + 3 + cb1] = L'\0';
 
-            DsoMemFree(pwszType);
+            DsoMemFree(pszType);
         }
 
-        *ppwszFileType = ((pwszCombined) ? pwszCombined : pwszType);
+        *ppwszFileType = ((pwszCombined) ? pwszCombined : pszType);
     }
 
     if ((ppwszFileExt == NULL) && (pwszExt))
@@ -1908,71 +1909,71 @@ STDMETHODIMP CDsoDocObject::SetRunningServerLock(BOOL fLock)
 //  Returns an instance of MSDAIPP URL resource provider which is used by
 //  Office/Windows for Web Folders (DAV/FPSE server). 
 //
-STDMETHODIMP_(IUnknown*) CDsoDocObject::CreateIPPBindResource()
-{
-	HRESULT           hr;
-	IDBProperties*    pdbprops = NULL;
-	IBindResource*    pres    = NULL;
-	DBPROPSET         rdbpset;
-	DBPROP            rdbp[4];
-	BSTR              bstrLock;
-	DWORD             dw = 256;
-	CHAR              szUserName[256];
-
-	if (FAILED(CoCreateInstance(CLSID_MSDAIPP_BINDER, NULL,
-                CLSCTX_INPROC, IID_IDBProperties, (void**)&pdbprops)))
-		return NULL;
-
-	bstrLock = (GetUserName(szUserName, &dw) ? DsoConvertToBSTR(szUserName) : NULL);
-
-	memset(rdbp, 0, sizeof(4 * sizeof(DBPROP)));
-
-	rdbpset.cProperties = 4; 
-	rdbpset.guidPropertySet = DBPROPSET_DBINIT;
-	rdbpset.rgProperties = rdbp;
-
-	rdbp[0].dwPropertyID = DBPROP_INIT_BINDFLAGS;
-	rdbp[0].vValue.vt = VT_I4;
-	rdbp[0].vValue.lVal = DBBINDURLFLAG_OUTPUT;
-
-	rdbp[1].dwPropertyID = DBPROP_INIT_LOCKOWNER;
-	rdbp[1].vValue.vt = VT_BSTR;
-	rdbp[1].vValue.bstrVal = bstrLock;
-
-	rdbp[2].dwPropertyID = DBPROP_INIT_LCID;
-	rdbp[2].vValue.vt = VT_I4;
-	rdbp[2].vValue.lVal = GetThreadLocale();
-
-	rdbp[3].dwPropertyID = DBPROP_INIT_PROMPT;
-	rdbp[3].vValue.vt = VT_I2;
-	rdbp[3].vValue.iVal = DBPROMPT_COMPLETE;
-
-	if (pdbprops->SetProperties(1, &rdbpset) == S_OK)
-	{
-#ifdef DSO_MSDAIPP_USE_DAVONLY
-		BSTR  bstrClsid = SysAllocString(L"{9FECD570-B9D4-11D1-9C78-0000F875AC61}");
-		if (bstrClsid)
-		{
-			rdbpset.cProperties = 1; 
-			rdbpset.guidPropertySet = DBPROPSET_MSDAIPP_INIT;
-			rdbpset.rgProperties = rdbp;
-
-			rdbp[0].dwPropertyID = 6; // DBPROP_INIT_PROTOCOLPROVIDER;
-			rdbp[0].vValue.vt = VT_BSTR;
-			rdbp[0].vValue.bstrVal = bstrClsid;
-
-			hr = pdbprops->SetProperties(1, &rdbpset);
-			SysFreeString(bstrClsid);
-		}
-#endif
-		hr = pdbprops->QueryInterface(IIDX_IBindResource, (void**)&pres);
-	}
-
-    SAFE_FREEBSTR(bstrLock);
-	pdbprops->Release();
-
-	return (IUnknown*)pres;
-}
+//STDMETHODIMP_(IUnknown*) CDsoDocObject::CreateIPPBindResource()
+//{
+//	HRESULT           hr;
+//	IDBProperties*    pdbprops = NULL;
+//	IBindResource*    pres    = NULL;
+//	DBPROPSET         rdbpset;
+//	DBPROP            rdbp[4];
+//	BSTR              bstrLock;
+//	DWORD             dw = 256;
+//	WCHAR              szUserName[256];
+//
+//	if (FAILED(CoCreateInstance(CLSID_MSDAIPP_BINDER, NULL,
+//                CLSCTX_INPROC, IID_IDBProperties, (void**)&pdbprops)))
+//		return NULL;
+//
+//	bstrLock = (GetUserName(szUserName, &dw) ? szUserName : NULL);
+//
+//	memset(rdbp, 0, sizeof(4 * sizeof(DBPROP)));
+//
+//	rdbpset.cProperties = 4; 
+//	rdbpset.guidPropertySet = DBPROPSET_DBINIT;
+//	rdbpset.rgProperties = rdbp;
+//
+//	rdbp[0].dwPropertyID = DBPROP_INIT_BINDFLAGS;
+//	rdbp[0].vValue.vt = VT_I4;
+//	rdbp[0].vValue.lVal = DBBINDURLFLAG_OUTPUT;
+//
+//	rdbp[1].dwPropertyID = DBPROP_INIT_LOCKOWNER;
+//	rdbp[1].vValue.vt = VT_BSTR;
+//	rdbp[1].vValue.bstrVal = bstrLock;
+//
+//	rdbp[2].dwPropertyID = DBPROP_INIT_LCID;
+//	rdbp[2].vValue.vt = VT_I4;
+//	rdbp[2].vValue.lVal = GetThreadLocale();
+//
+//	rdbp[3].dwPropertyID = DBPROP_INIT_PROMPT;
+//	rdbp[3].vValue.vt = VT_I2;
+//	rdbp[3].vValue.iVal = DBPROMPT_COMPLETE;
+//
+//	if (pdbprops->SetProperties(1, &rdbpset) == S_OK)
+//	{
+//#ifdef DSO_MSDAIPP_USE_DAVONLY
+//		BSTR  bstrClsid = SysAllocString(L"{9FECD570-B9D4-11D1-9C78-0000F875AC61}");
+//		if (bstrClsid)
+//		{
+//			rdbpset.cProperties = 1; 
+//			rdbpset.guidPropertySet = DBPROPSET_MSDAIPP_INIT;
+//			rdbpset.rgProperties = rdbp;
+//
+//			rdbp[0].dwPropertyID = 6; // DBPROP_INIT_PROTOCOLPROVIDER;
+//			rdbp[0].vValue.vt = VT_BSTR;
+//			rdbp[0].vValue.bstrVal = bstrClsid;
+//
+//			hr = pdbprops->SetProperties(1, &rdbpset);
+//			SysFreeString(bstrClsid);
+//		}
+//#endif
+//		hr = pdbprops->QueryInterface(IIDX_IBindResource, (void**)&pres);
+//	}
+//
+//    SAFE_FREEBSTR(bstrLock);
+//	pdbprops->Release();
+//
+//	return (IUnknown*)pres;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::IPPDownloadWebResource (protected)
@@ -1980,94 +1981,94 @@ STDMETHODIMP_(IUnknown*) CDsoDocObject::CreateIPPBindResource()
 //  Downloads the file specified by the URL to the given temp file. Locks
 //  the web resource for editing if ppstmKeepForSave is requested.
 //
-STDMETHODIMP CDsoDocObject::IPPDownloadWebResource(LPWSTR pwszURL, LPWSTR pwszFile, IStream** ppstmKeepForSave)
-{
-	HRESULT        hr    = E_UNEXPECTED;
-	IStream       *pstm  = NULL;
-	IBindResource *pres  = NULL;
-	BYTE          *rgbBuf;
-	DWORD   dwStatus, dwBindFlags;
-	ULONG   cbRead, cbWritten;
-	HANDLE  hFile;
-
- // Sanity check...
-    if ((pwszURL == NULL) || (pwszFile == NULL) || (ppstmKeepForSave == NULL))
-        return E_INVALIDARG;
-
- // We need MSDAIPP for full write access...
-	if (!(m_punkIPPResource) && !(m_punkIPPResource = CreateIPPBindResource()))
-        return DSO_E_REQUIRESMSDAIPP;
-
-	rgbBuf = new BYTE[10240]; //a 10-k buffer for reading
-	if (!rgbBuf) return E_OUTOFMEMORY;
-
- // Use IBindResource::Bind to open an IStream and copy out the date to
- // the file given. This will then be used to load the object from the file...
-	if (SUCCEEDED(m_punkIPPResource->QueryInterface(IIDX_IBindResource, (void**)&pres)))
-	{
-		dwBindFlags = (DBBINDURLFLAG_READ | DBBINDURLFLAG_WRITE | DBBINDURLFLAG_OUTPUT | DBBINDURLFLAG_SHARE_DENY_WRITE);
-callagain:
-		if (SUCCEEDED(hr = pres->Bind(NULL, pwszURL, dwBindFlags, DBGUIDX_STREAM, 
-				IID_IStream, (IAuthenticate*)&m_xAuthenticate, NULL, &dwStatus, (IUnknown**)&pstm)))
-		{
-			LARGE_INTEGER lintStart; lintStart.QuadPart = 0;
-			hr = pstm->Seek(lintStart, STREAM_SEEK_SET, NULL);
-
-			if (FOpenLocalFile(pwszFile, GENERIC_WRITE, 0, CREATE_ALWAYS, &hFile))
-			{
-				while (SUCCEEDED(hr))
-				{
-					if (FAILED(hr = pstm->Read((void*)rgbBuf, 10240, &cbRead)) ||
-						(cbRead == 0))
-						break;
-
-					if (FALSE == WriteFile(hFile, rgbBuf, cbRead, &cbWritten, NULL))
-					{
-						hr = E_WIN32_LASTERROR;
-						break;
-					}
-				}
-
-				CloseHandle(hFile);
-			}
-            else hr = E_WIN32_LASTERROR;
-
-			SAFE_SET_INTERFACE(*ppstmKeepForSave, pstm);
-
-			pstm->Release();
-		}
-		else if ((hr == DB_E_NOTSUPPORTED) && ((dwBindFlags & DBBINDURLFLAG_OUTPUT) == DBBINDURLFLAG_OUTPUT))
-		{
-		 // WEC4 does not support DBBINDURLFLAG_OUTPUT flag, but if we are using WEC
-		 // we don't really need the flag since this is not an HTTP GET call. Flip the
-		 // flag off and call the method again to connect to server...
-			dwBindFlags &= ~DBBINDURLFLAG_OUTPUT; 
-			goto callagain;
-		}
-
-  		pres->Release();
-	}
-
- // Map an OLEDB error to a common "file" error so a user
- // (and VB/VBScript) would better understand... 
-	if (FAILED(hr))
-	{
-		switch (hr)
-		{
-		case DB_E_NOTFOUND:             hr = STG_E_FILENOTFOUND; break;
-		case DB_E_READONLY:
-		case DB_E_RESOURCELOCKED:       hr = STG_E_LOCKVIOLATION; break;
-		case DB_SEC_E_PERMISSIONDENIED:
-		case DB_SEC_E_SAFEMODE_DENIED:  hr = E_ACCESSDENIED; break;
-		case DB_E_CANNOTCONNECT:
-		case DB_E_TIMEOUT:              hr = E_VBA_NOREMOTESERVER; break;
-		case E_NOINTERFACE:             hr = E_UNEXPECTED; break;
-		}
-	}
-
-	delete [] rgbBuf;
-	return hr;
-}
+//STDMETHODIMP CDsoDocObject::IPPDownloadWebResource(LPWSTR pwszURL, LPWSTR pwszFile, IStream** ppstmKeepForSave)
+//{
+//	HRESULT        hr    = E_UNEXPECTED;
+//	IStream       *pstm  = NULL;
+//	IBindResource *pres  = NULL;
+//	BYTE          *rgbBuf;
+//	DWORD   dwStatus, dwBindFlags;
+//	ULONG   cbRead, cbWritten;
+//	HANDLE  hFile;
+//
+// // Sanity check...
+//    if ((pwszURL == NULL) || (pwszFile == NULL) || (ppstmKeepForSave == NULL))
+//        return E_INVALIDARG;
+//
+// // We need MSDAIPP for full write access...
+//	if (!(m_punkIPPResource) && !(m_punkIPPResource = CreateIPPBindResource()))
+//        return DSO_E_REQUIRESMSDAIPP;
+//
+//	rgbBuf = new BYTE[10240]; //a 10-k buffer for reading
+//	if (!rgbBuf) return E_OUTOFMEMORY;
+//
+// // Use IBindResource::Bind to open an IStream and copy out the date to
+// // the file given. This will then be used to load the object from the file...
+//	if (SUCCEEDED(m_punkIPPResource->QueryInterface(IIDX_IBindResource, (void**)&pres)))
+//	{
+//		dwBindFlags = (DBBINDURLFLAG_READ | DBBINDURLFLAG_WRITE | DBBINDURLFLAG_OUTPUT | DBBINDURLFLAG_SHARE_DENY_WRITE);
+//callagain:
+//		if (SUCCEEDED(hr = pres->Bind(NULL, pwszURL, dwBindFlags, DBGUIDX_STREAM, 
+//				IID_IStream, (IAuthenticate*)&m_xAuthenticate, NULL, &dwStatus, (IUnknown**)&pstm)))
+//		{
+//			LARGE_INTEGER lintStart; lintStart.QuadPart = 0;
+//			hr = pstm->Seek(lintStart, STREAM_SEEK_SET, NULL);
+//
+//			if (FOpenLocalFile(pwszFile, GENERIC_WRITE, 0, CREATE_ALWAYS, &hFile))
+//			{
+//				while (SUCCEEDED(hr))
+//				{
+//					if (FAILED(hr = pstm->Read((void*)rgbBuf, 10240, &cbRead)) ||
+//						(cbRead == 0))
+//						break;
+//
+//					if (FALSE == WriteFile(hFile, rgbBuf, cbRead, &cbWritten, NULL))
+//					{
+//						hr = E_WIN32_LASTERROR;
+//						break;
+//					}
+//				}
+//
+//				CloseHandle(hFile);
+//			}
+//            else hr = E_WIN32_LASTERROR;
+//
+//			SAFE_SET_INTERFACE(*ppstmKeepForSave, pstm);
+//
+//			pstm->Release();
+//		}
+//		else if ((hr == DB_E_NOTSUPPORTED) && ((dwBindFlags & DBBINDURLFLAG_OUTPUT) == DBBINDURLFLAG_OUTPUT))
+//		{
+//		 // WEC4 does not support DBBINDURLFLAG_OUTPUT flag, but if we are using WEC
+//		 // we don't really need the flag since this is not an HTTP GET call. Flip the
+//		 // flag off and call the method again to connect to server...
+//			dwBindFlags &= ~DBBINDURLFLAG_OUTPUT; 
+//			goto callagain;
+//		}
+//
+//  		pres->Release();
+//	}
+//
+// // Map an OLEDB error to a common "file" error so a user
+// // (and VB/VBScript) would better understand... 
+//	if (FAILED(hr))
+//	{
+//		switch (hr)
+//		{
+//		case DB_E_NOTFOUND:             hr = STG_E_FILENOTFOUND; break;
+//		case DB_E_READONLY:
+//		case DB_E_RESOURCELOCKED:       hr = STG_E_LOCKVIOLATION; break;
+//		case DB_SEC_E_PERMISSIONDENIED:
+//		case DB_SEC_E_SAFEMODE_DENIED:  hr = E_ACCESSDENIED; break;
+//		case DB_E_CANNOTCONNECT:
+//		case DB_E_TIMEOUT:              hr = E_VBA_NOREMOTESERVER; break;
+//		case E_NOINTERFACE:             hr = E_UNEXPECTED; break;
+//		}
+//	}
+//
+//	delete [] rgbBuf;
+//	return hr;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::IPPUploadWebResource (protected)
@@ -2083,112 +2084,112 @@ callagain:
 //      stream. If ppstmSave is passed, we return the new IStream* to the
 //      caller who can then use it to do the other type of save next time.
 //
-STDMETHODIMP CDsoDocObject::IPPUploadWebResource(LPWSTR pwszFile, IStream** ppstmSave, LPWSTR pwszURLSaveTo, BOOL fOverwriteFile)
-{
-	HRESULT     hr     = E_UNEXPECTED;
-	ICreateRow *pcrow  = NULL;
-	IStream    *pstm   = NULL;
-	BYTE       *rgbBuf;
-	HANDLE      hFile;
-	BOOL        fstmIn = FALSE;
-	ULONG       cbRead, cbWritten;
-	DWORD       dwStatus, dwBindFlags;
-
- // We need MSDAIPP for full write access...
-	if (!(m_punkIPPResource) && !(m_punkIPPResource = CreateIPPBindResource()))
-        return DSO_E_REQUIRESMSDAIPP;
-
- // Check if this a "Save" on existing IStream* and jump to loop...
-	if ((ppstmSave) && (fstmIn = (BOOL)(pstm = *ppstmSave)))
-		goto uploadfrominstm;
-
- // Check the URL string and ask for ICreateRow (to make new web resource)... 
-	if (!(pwszURLSaveTo) || !LooksLikeHTTP(pwszURLSaveTo) ||
-		FAILED(m_punkIPPResource->QueryInterface(IIDX_ICreateRow, (void**)&pcrow)))
-		return hr;
-
-	dwBindFlags = ( DBBINDURLFLAG_READ | 
-					DBBINDURLFLAG_WRITE | 
-					DBBINDURLFLAG_SHARE_DENY_WRITE | 
-                    (fOverwriteFile ? DBBINDURLFLAG_OVERWRITE : 0));
-
-	if (SUCCEEDED(hr = pcrow->CreateRow(NULL, pwszURLSaveTo, dwBindFlags, DBGUIDX_STREAM,
-			IID_IStream, (IAuthenticate*)&m_xAuthenticate, NULL, &dwStatus, NULL, (IUnknown**)&pstm)))
-	{
-
-	 // Once we are here, we have a stream (either handed in or opened from above).
-	 // We just loop through and read from the file to the stream...
-uploadfrominstm:
-		if (rgbBuf = new BYTE[10240]) //a 10-k buffer for reading
-		{
-			if (FOpenLocalFile(pwszFile, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &hFile))
-			{
-				LARGE_INTEGER lintStart; lintStart.QuadPart = 0;
-				hr = pstm->Seek(lintStart, STREAM_SEEK_SET, NULL);
-
-				while (SUCCEEDED(hr))
-				{
-					if (FALSE == ReadFile(hFile, rgbBuf, 10240, &cbRead, NULL))
-					{
-						hr = E_WIN32_LASTERROR;
-						break;
-					}
-
-					if (0 == cbRead) break;
-
-					if (FAILED(hr = pstm->Write((void*)rgbBuf, cbRead, &cbWritten)))
-						break;
-				}
-
-			 // Need to commit the changes to make it official...
-				if (SUCCEEDED(hr))
-					hr = pstm->Commit(STGC_DEFAULT);
-
-				CloseHandle(hFile);
-			}
-            else hr = E_WIN32_LASTERROR;
-
-			delete [] rgbBuf;
-		}
-        else hr = E_OUTOFMEMORY;
-
-	 // If we are not using a passed in IStream (and therefore created one), we
-	 // should AddRef and pass back (if caller asked us to)...
-		if (!fstmIn)
-		{
-			if (SUCCEEDED(hr) && (ppstmSave) && (!(*ppstmSave)))
-			{
-                SAFE_SET_INTERFACE(*ppstmSave, pstm);
-			}
-			pstm->Release();
-		}
-
-	}
-
- // Map an OLEDB error to a common "file" error so a user
- // (and VB/VBScript) would better understand... 
-    if (FAILED(hr))
-	{
-		switch (hr)
-		{
-		case DB_E_RESOURCEEXISTS:       hr = STG_E_FILEALREADYEXISTS; break;
-		case DB_E_NOTFOUND:             hr = STG_E_PATHNOTFOUND; break;
-		case DB_E_READONLY:
-		case DB_E_RESOURCELOCKED:       hr = STG_E_LOCKVIOLATION; break;
-		case DB_SEC_E_PERMISSIONDENIED:
-		case DB_SEC_E_SAFEMODE_DENIED:  hr = E_ACCESSDENIED; break;
-		case DB_E_CANNOTCONNECT:
-		case DB_E_TIMEOUT:              hr = E_VBA_NOREMOTESERVER; break;
-		case DB_E_OUTOFSPACE:           hr = STG_E_MEDIUMFULL; break;
-		case E_NOINTERFACE:             hr = E_UNEXPECTED; break;
-		}
-	}
-
-	if (pcrow)
-		pcrow->Release();
-
-	return hr;
-}
+//STDMETHODIMP CDsoDocObject::IPPUploadWebResource(LPWSTR pwszFile, IStream** ppstmSave, LPWSTR pwszURLSaveTo, BOOL fOverwriteFile)
+//{
+//	HRESULT     hr     = E_UNEXPECTED;
+//	ICreateRow *pcrow  = NULL;
+//	IStream    *pstm   = NULL;
+//	BYTE       *rgbBuf;
+//	HANDLE      hFile;
+//	BOOL        fstmIn = FALSE;
+//	ULONG       cbRead, cbWritten;
+//	DWORD       dwStatus, dwBindFlags;
+//
+// // We need MSDAIPP for full write access...
+//	if (!(m_punkIPPResource) && !(m_punkIPPResource = CreateIPPBindResource()))
+//        return DSO_E_REQUIRESMSDAIPP;
+//
+// // Check if this a "Save" on existing IStream* and jump to loop...
+//	if ((ppstmSave) && (fstmIn = (BOOL)(pstm = *ppstmSave)))
+//		goto uploadfrominstm;
+//
+// // Check the URL string and ask for ICreateRow (to make new web resource)... 
+//	if (!(pwszURLSaveTo) || !LooksLikeHTTP(pwszURLSaveTo) ||
+//		FAILED(m_punkIPPResource->QueryInterface(IIDX_ICreateRow, (void**)&pcrow)))
+//		return hr;
+//
+//	dwBindFlags = ( DBBINDURLFLAG_READ | 
+//					DBBINDURLFLAG_WRITE | 
+//					DBBINDURLFLAG_SHARE_DENY_WRITE | 
+//                    (fOverwriteFile ? DBBINDURLFLAG_OVERWRITE : 0));
+//
+//	if (SUCCEEDED(hr = pcrow->CreateRow(NULL, pwszURLSaveTo, dwBindFlags, DBGUIDX_STREAM,
+//			IID_IStream, (IAuthenticate*)&m_xAuthenticate, NULL, &dwStatus, NULL, (IUnknown**)&pstm)))
+//	{
+//
+//	 // Once we are here, we have a stream (either handed in or opened from above).
+//	 // We just loop through and read from the file to the stream...
+//uploadfrominstm:
+//		if (rgbBuf = new BYTE[10240]) //a 10-k buffer for reading
+//		{
+//			if (FOpenLocalFile(pwszFile, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &hFile))
+//			{
+//				LARGE_INTEGER lintStart; lintStart.QuadPart = 0;
+//				hr = pstm->Seek(lintStart, STREAM_SEEK_SET, NULL);
+//
+//				while (SUCCEEDED(hr))
+//				{
+//					if (FALSE == ReadFile(hFile, rgbBuf, 10240, &cbRead, NULL))
+//					{
+//						hr = E_WIN32_LASTERROR;
+//						break;
+//					}
+//
+//					if (0 == cbRead) break;
+//
+//					if (FAILED(hr = pstm->Write((void*)rgbBuf, cbRead, &cbWritten)))
+//						break;
+//				}
+//
+//			 // Need to commit the changes to make it official...
+//				if (SUCCEEDED(hr))
+//					hr = pstm->Commit(STGC_DEFAULT);
+//
+//				CloseHandle(hFile);
+//			}
+//            else hr = E_WIN32_LASTERROR;
+//
+//			delete [] rgbBuf;
+//		}
+//        else hr = E_OUTOFMEMORY;
+//
+//	 // If we are not using a passed in IStream (and therefore created one), we
+//	 // should AddRef and pass back (if caller asked us to)...
+//		if (!fstmIn)
+//		{
+//			if (SUCCEEDED(hr) && (ppstmSave) && (!(*ppstmSave)))
+//			{
+//                SAFE_SET_INTERFACE(*ppstmSave, pstm);
+//			}
+//			pstm->Release();
+//		}
+//
+//	}
+//
+// // Map an OLEDB error to a common "file" error so a user
+// // (and VB/VBScript) would better understand... 
+//    if (FAILED(hr))
+//	{
+//		switch (hr)
+//		{
+//		case DB_E_RESOURCEEXISTS:       hr = STG_E_FILEALREADYEXISTS; break;
+//		case DB_E_NOTFOUND:             hr = STG_E_PATHNOTFOUND; break;
+//		case DB_E_READONLY:
+//		case DB_E_RESOURCELOCKED:       hr = STG_E_LOCKVIOLATION; break;
+//		case DB_SEC_E_PERMISSIONDENIED:
+//		case DB_SEC_E_SAFEMODE_DENIED:  hr = E_ACCESSDENIED; break;
+//		case DB_E_CANNOTCONNECT:
+//		case DB_E_TIMEOUT:              hr = E_VBA_NOREMOTESERVER; break;
+//		case DB_E_OUTOFSPACE:           hr = STG_E_MEDIUMFULL; break;
+//		case E_NOINTERFACE:             hr = E_UNEXPECTED; break;
+//		}
+//	}
+//
+//	if (pcrow)
+//		pcrow->Release();
+//
+//	return hr;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::TurnOffWebToolbar (protected)
@@ -2361,10 +2362,10 @@ STDMETHODIMP CDsoDocObject::QueryInterface(REFIID riid, void** ppv)
 	{
 		*ppv = (IOleCommandTarget*)&m_xOleCommandTarget;
 	}
-	else if (IIDX_IAuthenticate == riid)
-	{
-		*ppv = (IAuthenticate*)&m_xAuthenticate;
-	}
+	//else if (IIDX_IAuthenticate == riid)
+	//{
+	//	*ppv = (IAuthenticate*)&m_xAuthenticate;
+	//}
     else if (IID_IServiceProvider == riid)
     {
         *ppv = (IServiceProvider*)&m_xServiceProvider;
@@ -2373,10 +2374,10 @@ STDMETHODIMP CDsoDocObject::QueryInterface(REFIID riid, void** ppv)
     {
         *ppv = (IContinueCallback*)&m_xContinueCallback;
     }
-    else if (IID_IOlePreviewCallback == riid)
-    {
-        *ppv = (IOlePreviewCallback*)&m_xPreviewCallback;
-    }
+    //else if (IID_IOlePreviewCallback == riid)
+    //{
+    //    *ppv = (IOlePreviewCallback*)&m_xPreviewCallback;
+    //}
 	else
 	{
 		*ppv = NULL;
@@ -2997,91 +2998,91 @@ STDMETHODIMP CDsoDocObject::XPreviewCallback::Notify(DWORD wStatus, LONG nLastPa
 //  For this to work, the object embedded must support IDataObject and the clip
 //  format that you request.
 //
-STDMETHODIMP CDsoDocObject::HrGetDataFromObject(VARIANT *pvtType, VARIANT *pvtOutput)
-{
-    HRESULT hr;
-    IDataObject *pdo = NULL;
-    LPWSTR pwszTypeName;
-    LPSTR pszFormatName;
-    SAFEARRAY* psa;
-    VOID HUGEP* prawdata;
-    FORMATETC ftc;
-    STGMEDIUM stgm;
-    LONG cfType;
-    
-    if ((pvtType == NULL)   || PARAM_IS_MISSING(pvtType) || 
-        (pvtOutput == NULL) || PARAM_IS_MISSING(pvtOutput))
-        return E_INVALIDARG;
-
-    VariantClear(pvtOutput);
-
- // We take the name and find the right clipformat for the data type...
-    pwszTypeName = LPWSTR_FROM_VARIANT(*pvtType);
-    if ((pwszTypeName) && (pszFormatName = DsoConvertToMBCS(pwszTypeName)))
-    {
-        cfType = RegisterClipboardFormat(pszFormatName);
-        DsoMemFree(pszFormatName);
-    }
-    else cfType = LONG_FROM_VARIANT(*pvtType, 0);
-    CHECK_NULL_RETURN(cfType, E_INVALIDARG);
-
- // We must be able to get IDataObject for the transfer to work...
-    if ((m_pole == NULL) || 
-        (FAILED(m_pole->GetClipboardData(0, &pdo)) && 
-         FAILED(m_pole->QueryInterface(IID_IDataObject, (void**)&pdo))))
-         return OLE_E_CANT_GETMONIKER;
-
-    ASSERT(pdo); CHECK_NULL_RETURN(pdo, E_UNEXPECTED);
-
- // We are going to ask for HGLOBAL data format only. This is majority 
- // of the non-binary formats, which should be sufficient here...
-    memset(&ftc, 0, sizeof(ftc));
-    ftc.cfFormat = (WORD)cfType;
-    ftc.dwAspect = DVASPECT_CONTENT;
-    ftc.lindex = -1; ftc.tymed = TYMED_HGLOBAL;
-
-    memset(&stgm, 0, sizeof(stgm));
-    stgm.tymed = TYMED_HGLOBAL;
-
- // Ask the object for the data...
-    if (SUCCEEDED(hr = pdo->QueryGetData(&ftc)) && 
-        SUCCEEDED(hr = pdo->GetData(&ftc, &stgm)))
-    {
-        ULONG ulSize;
-        if ((stgm.tymed == TYMED_HGLOBAL) && (stgm.hGlobal) &&
-            (ulSize = GlobalSize(stgm.hGlobal)))
-        {
-            LPVOID lpv = GlobalLock(stgm.hGlobal);
-            if (lpv)
-            {
-             // We will return data as safearray vector of VB6 Byte type...
-                psa = SafeArrayCreateVector(VT_UI1, 1, ulSize);
-                if (psa)
-                {
-                    pvtOutput->vt = VT_ARRAY|VT_UI1;
-                    pvtOutput->parray = psa;
-                    prawdata = NULL;
-
-                    if (SUCCEEDED(SafeArrayAccessData(psa, &prawdata)))
-                    {
-                        memcpy(prawdata, lpv, ulSize);
-                        SafeArrayUnaccessData(psa);
-                    }
-                }
-                else hr = E_OUTOFMEMORY;
-
-                GlobalUnlock(stgm.hGlobal);
-            }
-            else hr = E_ACCESSDENIED;
-        }
-        else hr = E_FAIL;
-
-        ReleaseStgMedium(&stgm);
-    }
-
-    pdo->Release();
-    return hr;
-}
+//STDMETHODIMP CDsoDocObject::HrGetDataFromObject(VARIANT *pvtType, VARIANT *pvtOutput)
+//{
+//    HRESULT hr;
+//    IDataObject *pdo = NULL;
+//    LPWSTR pwszTypeName;
+//    LPSTR pszFormatName;
+//    SAFEARRAY* psa;
+//    VOID HUGEP* prawdata;
+//    FORMATETC ftc;
+//    STGMEDIUM stgm;
+//    LONG cfType;
+//    
+//    if ((pvtType == NULL)   || PARAM_IS_MISSING(pvtType) || 
+//        (pvtOutput == NULL) || PARAM_IS_MISSING(pvtOutput))
+//        return E_INVALIDARG;
+//
+//    VariantClear(pvtOutput);
+//
+// // We take the name and find the right clipformat for the data type...
+//    pwszTypeName = LPWSTR_FROM_VARIANT(*pvtType);
+//    if ((pwszTypeName) && (pszFormatName = DsoConvertToMBCS(pwszTypeName)))
+//    {
+//        cfType = RegisterClipboardFormat(pszFormatName);
+//        DsoMemFree(pszFormatName);
+//    }
+//    else cfType = LONG_FROM_VARIANT(*pvtType, 0);
+//    CHECK_NULL_RETURN(cfType, E_INVALIDARG);
+//
+// // We must be able to get IDataObject for the transfer to work...
+//    if ((m_pole == NULL) || 
+//        (FAILED(m_pole->GetClipboardData(0, &pdo)) && 
+//         FAILED(m_pole->QueryInterface(IID_IDataObject, (void**)&pdo))))
+//         return OLE_E_CANT_GETMONIKER;
+//
+//    ASSERT(pdo); CHECK_NULL_RETURN(pdo, E_UNEXPECTED);
+//
+// // We are going to ask for HGLOBAL data format only. This is majority 
+// // of the non-binary formats, which should be sufficient here...
+//    memset(&ftc, 0, sizeof(ftc));
+//    ftc.cfFormat = (WORD)cfType;
+//    ftc.dwAspect = DVASPECT_CONTENT;
+//    ftc.lindex = -1; ftc.tymed = TYMED_HGLOBAL;
+//
+//    memset(&stgm, 0, sizeof(stgm));
+//    stgm.tymed = TYMED_HGLOBAL;
+//
+// // Ask the object for the data...
+//    if (SUCCEEDED(hr = pdo->QueryGetData(&ftc)) && 
+//        SUCCEEDED(hr = pdo->GetData(&ftc, &stgm)))
+//    {
+//        ULONG ulSize;
+//        if ((stgm.tymed == TYMED_HGLOBAL) && (stgm.hGlobal) &&
+//            (ulSize = GlobalSize(stgm.hGlobal)))
+//        {
+//            LPVOID lpv = GlobalLock(stgm.hGlobal);
+//            if (lpv)
+//            {
+//             // We will return data as safearray vector of VB6 Byte type...
+//                psa = SafeArrayCreateVector(VT_UI1, 1, ulSize);
+//                if (psa)
+//                {
+//                    pvtOutput->vt = VT_ARRAY|VT_UI1;
+//                    pvtOutput->parray = psa;
+//                    prawdata = NULL;
+//
+//                    if (SUCCEEDED(SafeArrayAccessData(psa, &prawdata)))
+//                    {
+//                        memcpy(prawdata, lpv, ulSize);
+//                        SafeArrayUnaccessData(psa);
+//                    }
+//                }
+//                else hr = E_OUTOFMEMORY;
+//
+//                GlobalUnlock(stgm.hGlobal);
+//            }
+//            else hr = E_ACCESSDENIED;
+//        }
+//        else hr = E_FAIL;
+//
+//        ReleaseStgMedium(&stgm);
+//    }
+//
+//    pdo->Release();
+//    return hr;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -3100,115 +3101,115 @@ STDMETHODIMP CDsoDocObject::HrGetDataFromObject(VARIANT *pvtType, VARIANT *pvtOu
 //   acquired data type. It is up to the host DocObject server, so test carefully before
 //   depending on this functionality.
 //
-STDMETHODIMP CDsoDocObject::HrSetDataInObject(VARIANT *pvtType, VARIANT *pvtInput, BOOL fMbcsString)
-{
-    HRESULT hr;
-    IDataObject *pdo = NULL;
-    LPWSTR pwszTypeName;
-    LPSTR pszFormatName;
-    SAFEARRAY* psa;
-    VOID HUGEP* prawdata;
-    FORMATETC ftc;
-    STGMEDIUM stgm;
-    LONG cfType;
-    ULONG ulSize;
-    BOOL fIsArrayData = FALSE;
-    BOOL fCleanupString = FALSE;
-
-    if ((pvtType == NULL)  || PARAM_IS_MISSING(pvtType) || 
-        (pvtInput == NULL) || PARAM_IS_MISSING(pvtInput))
-        return E_INVALIDARG;
-
- // Find the clipboard format for the given data type...
-    pwszTypeName = LPWSTR_FROM_VARIANT(*pvtType);
-    if ((pwszTypeName) && (pszFormatName = DsoConvertToMBCS(pwszTypeName)))
-    {
-        cfType = RegisterClipboardFormat(pszFormatName);
-        DsoMemFree(pszFormatName);
-    }
-    else cfType = LONG_FROM_VARIANT(*pvtType, 0);
-    CHECK_NULL_RETURN(cfType, E_INVALIDARG);
-
- // Depending on the type of data passed, and if we need to do any Unicode-to-MBCS
- // conversion for the caller, set up the data size and data pointer we will use
- // to create the global memory object we'll pass to the doc object server...
-    prawdata = LPWSTR_FROM_VARIANT(*pvtInput);
-    if (prawdata)
-    {
-        if (fMbcsString)
-        {
-            prawdata = (void*)DsoConvertToMBCS((BSTR)prawdata);
-            CHECK_NULL_RETURN(prawdata, E_OUTOFMEMORY);
-            fCleanupString = TRUE;
-            ulSize = lstrlen((LPSTR)prawdata);
-        }
-        else
-            ulSize = SysStringByteLen((BSTR)prawdata);
-    }
-    else
-    {
-        psa = PSARRAY_FROM_VARIANT(*pvtInput);
-        if (psa)
-        {
-            LONG lb, ub, elSize;
-
-            if ((SafeArrayGetDim(psa) > 1) ||
-                FAILED(SafeArrayGetLBound(psa, 1, &lb)) || (lb < 0) ||
-                FAILED(SafeArrayGetUBound(psa, 1, &ub)) || (ub < lb) ||
-                ((elSize = SafeArrayGetElemsize(psa)) < 1))
-                return E_INVALIDARG;
-
-            ulSize = (((ub + 1) - lb) * elSize);
-            fIsArrayData = TRUE;
-            if (FAILED(SafeArrayAccessData(psa, &prawdata)))
-                return E_ACCESSDENIED;
-        }
-
-        CHECK_NULL_RETURN(prawdata, E_INVALIDARG);
-    }
-
- // We must have a server and it must support IDataObject...
-    if ((m_pole) && SUCCEEDED(m_pole->QueryInterface(IID_IDataObject, (void**)&pdo)) && (pdo))
-    {
-        memset(&ftc, 0, sizeof(ftc));
-        ftc.cfFormat = (WORD)cfType;
-        ftc.dwAspect = DVASPECT_CONTENT;
-        ftc.lindex = -1; ftc.tymed = TYMED_HGLOBAL;
-
-        memset(&stgm, 0, sizeof(stgm));
-        stgm.tymed = TYMED_HGLOBAL;
-        stgm.hGlobal = GlobalAlloc(GPTR, ulSize);
-        if (stgm.hGlobal)
-        {
-            LPVOID lpv = GlobalLock(stgm.hGlobal);
-            if ((lpv) && (ulSize))
-            {
-             // Copy the data into transfer object...
-                memcpy(lpv, prawdata, ulSize);
-                GlobalUnlock(stgm.hGlobal);
-
-             // Do the actual SetData call to transfer the data...
-                hr = pdo->SetData(&ftc, &stgm, TRUE);
-            } 
-            else hr = E_UNEXPECTED;
-
-            if (FAILED(hr))
-                ReleaseStgMedium(&stgm);
-        }
-        else hr = E_OUTOFMEMORY;
-
-        pdo->Release();
-    }
-    else hr = OLE_E_CANT_GETMONIKER;
-
-    if (fIsArrayData)
-         SafeArrayUnaccessData(psa);
-
-    if (fCleanupString)
-        DsoMemFree(prawdata);
-
-    return hr;
-}
+//STDMETHODIMP CDsoDocObject::HrSetDataInObject(VARIANT *pvtType, VARIANT *pvtInput, BOOL fMbcsString)
+//{
+//    HRESULT hr;
+//    IDataObject *pdo = NULL;
+//    LPWSTR pwszTypeName;
+//    LPSTR pszFormatName;
+//    SAFEARRAY* psa;
+//    VOID HUGEP* prawdata;
+//    FORMATETC ftc;
+//    STGMEDIUM stgm;
+//    LONG cfType;
+//    ULONG ulSize;
+//    BOOL fIsArrayData = FALSE;
+//    BOOL fCleanupString = FALSE;
+//
+//    if ((pvtType == NULL)  || PARAM_IS_MISSING(pvtType) || 
+//        (pvtInput == NULL) || PARAM_IS_MISSING(pvtInput))
+//        return E_INVALIDARG;
+//
+// // Find the clipboard format for the given data type...
+//    pwszTypeName = LPWSTR_FROM_VARIANT(*pvtType);
+//    if ((pwszTypeName) && (pszFormatName = DsoConvertToMBCS(pwszTypeName)))
+//    {
+//        cfType = RegisterClipboardFormat(pszFormatName);
+//        DsoMemFree(pszFormatName);
+//    }
+//    else cfType = LONG_FROM_VARIANT(*pvtType, 0);
+//    CHECK_NULL_RETURN(cfType, E_INVALIDARG);
+//
+// // Depending on the type of data passed, and if we need to do any Unicode-to-MBCS
+// // conversion for the caller, set up the data size and data pointer we will use
+// // to create the global memory object we'll pass to the doc object server...
+//    prawdata = LPWSTR_FROM_VARIANT(*pvtInput);
+//    if (prawdata)
+//    {
+//        if (fMbcsString)
+//        {
+//            prawdata = (void*)DsoConvertToMBCS((BSTR)prawdata);
+//            CHECK_NULL_RETURN(prawdata, E_OUTOFMEMORY);
+//            fCleanupString = TRUE;
+//            ulSize = lstrlen((LPSTR)prawdata);
+//        }
+//        else
+//            ulSize = SysStringByteLen((BSTR)prawdata);
+//    }
+//    else
+//    {
+//        psa = PSARRAY_FROM_VARIANT(*pvtInput);
+//        if (psa)
+//        {
+//            LONG lb, ub, elSize;
+//
+//            if ((SafeArrayGetDim(psa) > 1) ||
+//                FAILED(SafeArrayGetLBound(psa, 1, &lb)) || (lb < 0) ||
+//                FAILED(SafeArrayGetUBound(psa, 1, &ub)) || (ub < lb) ||
+//                ((elSize = SafeArrayGetElemsize(psa)) < 1))
+//                return E_INVALIDARG;
+//
+//            ulSize = (((ub + 1) - lb) * elSize);
+//            fIsArrayData = TRUE;
+//            if (FAILED(SafeArrayAccessData(psa, &prawdata)))
+//                return E_ACCESSDENIED;
+//        }
+//
+//        CHECK_NULL_RETURN(prawdata, E_INVALIDARG);
+//    }
+//
+// // We must have a server and it must support IDataObject...
+//    if ((m_pole) && SUCCEEDED(m_pole->QueryInterface(IID_IDataObject, (void**)&pdo)) && (pdo))
+//    {
+//        memset(&ftc, 0, sizeof(ftc));
+//        ftc.cfFormat = (WORD)cfType;
+//        ftc.dwAspect = DVASPECT_CONTENT;
+//        ftc.lindex = -1; ftc.tymed = TYMED_HGLOBAL;
+//
+//        memset(&stgm, 0, sizeof(stgm));
+//        stgm.tymed = TYMED_HGLOBAL;
+//        stgm.hGlobal = GlobalAlloc(GPTR, ulSize);
+//        if (stgm.hGlobal)
+//        {
+//            LPVOID lpv = GlobalLock(stgm.hGlobal);
+//            if ((lpv) && (ulSize))
+//            {
+//             // Copy the data into transfer object...
+//                memcpy(lpv, prawdata, ulSize);
+//                GlobalUnlock(stgm.hGlobal);
+//
+//             // Do the actual SetData call to transfer the data...
+//                hr = pdo->SetData(&ftc, &stgm, TRUE);
+//            } 
+//            else hr = E_UNEXPECTED;
+//
+//            if (FAILED(hr))
+//                ReleaseStgMedium(&stgm);
+//        }
+//        else hr = E_OUTOFMEMORY;
+//
+//        pdo->Release();
+//    }
+//    else hr = OLE_E_CANT_GETMONIKER;
+//
+//    if (fIsArrayData)
+//         SafeArrayUnaccessData(psa);
+//
+//    if (fCleanupString)
+//        DsoMemFree(prawdata);
+//
+//    return hr;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::FrameWindowProc

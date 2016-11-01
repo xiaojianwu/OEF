@@ -190,7 +190,7 @@ public:
     STDMETHODIMP  CreateDocObject(REFCLSID rclsid);
     STDMETHODIMP  CreateDocObject(IStorage *pstg);
     STDMETHODIMP  CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts);
-    STDMETHODIMP  CreateFromURL(LPWSTR pwszUrlFile, REFCLSID rclsid, LPBIND_OPTS pbndopts, LPWSTR pwszUserName, LPWSTR pwszPassword);
+    //STDMETHODIMP  CreateFromURL(LPWSTR pwszUrlFile, REFCLSID rclsid, LPBIND_OPTS pbndopts, LPWSTR pwszUserName, LPWSTR pwszPassword);
     STDMETHODIMP  CreateFromRunningObject(LPUNKNOWN punkObj, LPWSTR pwszObjectName, LPBIND_OPTS pbndopts);
     STDMETHODIMP  IPActivateView();
     STDMETHODIMP  IPDeactivateView();
@@ -199,9 +199,9 @@ public:
 	STDMETHODIMP_(BOOL) IsDirty();
     STDMETHODIMP  Save();
     STDMETHODIMP  SaveToFile(LPWSTR pwszFile, BOOL fOverwriteFile);
-    STDMETHODIMP  SaveToURL(LPWSTR pwszURL, BOOL fOverwriteFile, LPWSTR pwszUserName, LPWSTR pwszPassword);
+    //STDMETHODIMP  SaveToURL(LPWSTR pwszURL, BOOL fOverwriteFile, LPWSTR pwszUserName, LPWSTR pwszPassword);
     STDMETHODIMP  PrintDocument(LPCWSTR pwszPrinter, LPCWSTR pwszOutput, UINT cCopies, UINT nFrom, UINT nTo, BOOL fPromptUser);
-    STDMETHODIMP  StartPrintPreview();
+    //STDMETHODIMP  StartPrintPreview();
     STDMETHODIMP  ExitPrintPreview(BOOL fForceExit);
     STDMETHODIMP  DoOleCommand(DWORD dwOleCmdId, DWORD dwOptions, VARIANT* vInParam, VARIANT* vInOutParam);
     STDMETHODIMP  Close();
@@ -213,8 +213,8 @@ public:
     STDMETHODIMP_(void) OnNotifyChangeToolState(BOOL fShowTools);
     STDMETHODIMP_(void) OnNotifyControlFocus(BOOL fGotFocus);
    
-    STDMETHODIMP  HrGetDataFromObject(VARIANT *pvtType, VARIANT *pvtOutput);
-    STDMETHODIMP  HrSetDataInObject(VARIANT *pvtType, VARIANT *pvtInput, BOOL fMbcsString);
+    //STDMETHODIMP  HrGetDataFromObject(VARIANT *pvtType, VARIANT *pvtOutput);
+    //STDMETHODIMP  HrSetDataInObject(VARIANT *pvtType, VARIANT *pvtInput, BOOL fMbcsString);
 
     STDMETHODIMP_(BOOL) GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt);
 
@@ -282,9 +282,9 @@ protected:
  // which is installed by Office and comes standard in Windows 2000/ME/XP/2003. The
  // provider is not required to use the component, only if you wish to save to 
  // an FPSE or DAV Web Folder (URL). 
-    STDMETHODIMP_(IUnknown*) CreateIPPBindResource();
-    STDMETHODIMP             IPPDownloadWebResource(LPWSTR pwszURL, LPWSTR pwszFile, IStream** ppstmKeepForSave);
-    STDMETHODIMP             IPPUploadWebResource(LPWSTR pwszFile, IStream** ppstmSave, LPWSTR pwszURLSaveTo, BOOL fOverwriteFile);
+    //STDMETHODIMP_(IUnknown*) CreateIPPBindResource();
+    //STDMETHODIMP             IPPDownloadWebResource(LPWSTR pwszURL, LPWSTR pwszFile, IStream** ppstmKeepForSave);
+    //STDMETHODIMP             IPPUploadWebResource(LPWSTR pwszFile, IStream** ppstmSave, LPWSTR pwszURLSaveTo, BOOL fOverwriteFile);
 
     static STDMETHODIMP_(LRESULT)  FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

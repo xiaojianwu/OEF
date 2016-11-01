@@ -47,8 +47,8 @@ void  _cdecl operator delete(void *ptr);
 STDAPI DsoConvertToUnicodeEx(LPCSTR pszMbcsString, DWORD cbMbcsLen, LPWSTR pwszUnicode, DWORD cbUniLen, UINT uiCodePage);
 STDAPI DsoConvertToMBCSEx(LPCWSTR pwszUnicodeString, DWORD cbUniLen, LPSTR pwszMbcsString, DWORD cbMbcsLen, UINT uiCodePage);
 
-STDAPI_(LPWSTR) DsoConvertToLPWSTR(LPCSTR pszMbcsString);
-STDAPI_(BSTR)   DsoConvertToBSTR(LPCSTR pszMbcsString);
+//STDAPI_(LPWSTR) DsoConvertToLPWSTR(LPCSTR pszMbcsString);
+//STDAPI_(BSTR)   DsoConvertToBSTR(LPCSTR pszMbcsString);
 STDAPI_(LPWSTR) DsoConvertToLPOLESTR(LPCWSTR pwszUnicodeString);
 STDAPI_(LPSTR)  DsoConvertToMBCS(LPCWSTR pwszUnicodeString);
 STDAPI_(UINT)   DsoCompareStringsEx(LPCWSTR pwsz1, INT cch1, LPCWSTR pwsz2, INT cch2);
@@ -60,11 +60,11 @@ STDAPI_(LPSTR)  DsoCLSIDtoLPSTR(REFCLSID clsid);
 ////////////////////////////////////////////////////////////////////////
 // URL Helpers
 //
-STDAPI_(BOOL) LooksLikeLocalFile(LPCWSTR pwsz);
-STDAPI_(BOOL) LooksLikeUNC(LPCWSTR pwsz);
-STDAPI_(BOOL) LooksLikeHTTP(LPCWSTR pwsz);
-STDAPI_(BOOL) GetTempPathForURLDownload(WCHAR* pwszURL, WCHAR** ppwszLocalFile);
-STDAPI URLDownloadFile(LPUNKNOWN punk, WCHAR* pwszURL, WCHAR* pwszLocalFile);
+//STDAPI_(BOOL) LooksLikeLocalFile(LPCWSTR pwsz);
+//STDAPI_(BOOL) LooksLikeUNC(LPCWSTR pwsz);
+//STDAPI_(BOOL) LooksLikeHTTP(LPCWSTR pwsz);
+//STDAPI_(BOOL) GetTempPathForURLDownload(WCHAR* pwszURL, WCHAR** ppwszLocalFile);
+//STDAPI URLDownloadFile(LPUNKNOWN punk, WCHAR* pwszURL, WCHAR* pwszLocalFile);
 
 ////////////////////////////////////////////////////////////////////////
 // OLE Conversion Functions
@@ -85,7 +85,7 @@ STDAPI_(BOOL) IsWindowChild(HWND hwndParent, HWND hwndChild);
 ////////////////////////////////////////////////////////////////////////
 // OLE/Typelib Function Wrappers
 //
-STDAPI DsoGetTypeInfoEx(REFGUID rlibid, LCID lcid, WORD wVerMaj, WORD wVerMin, HMODULE hResource, REFGUID rguid, ITypeInfo** ppti);
+//STDAPI DsoGetTypeInfoEx(REFGUID rlibid, LCID lcid, WORD wVerMaj, WORD wVerMin, HMODULE hResource, REFGUID rguid, ITypeInfo** ppti);
 STDAPI DsoDispatchInvoke(LPDISPATCH pdisp, LPOLESTR pwszname, DISPID dspid, WORD wflags, DWORD cargs, VARIANT* rgargs, VARIANT* pvtret);
 STDAPI DsoReportError(HRESULT hr, LPWSTR pwszCustomMessage, EXCEPINFO* peiDispEx);
 
@@ -95,20 +95,20 @@ STDAPI DsoReportError(HRESULT hr, LPWSTR pwszCustomMessage, EXCEPINFO* peiDispEx
 STDAPI_(BOOL) FFileExists(WCHAR* wzPath);
 STDAPI_(BOOL) FOpenLocalFile(WCHAR* wzFilePath, DWORD dwAccess, DWORD dwShareMode, DWORD dwCreate, HANDLE* phFile);
 STDAPI_(BOOL) FPerformShellOp(DWORD dwOp, WCHAR* wzFrom, WCHAR* wzTo);
-STDAPI_(BOOL) FGetModuleFileName(HMODULE hModule, WCHAR** wzFileName);
-STDAPI_(BOOL) FIsIECacheFile(LPWSTR pwszFile);
+//STDAPI_(BOOL) FGetModuleFileName(HMODULE hModule, WCHAR** wzFileName);
+//STDAPI_(BOOL) FIsIECacheFile(LPWSTR pwszFile);
 STDAPI_(BOOL) FDrawText(HDC hdc, WCHAR* pwsz, LPRECT prc, UINT fmt);
 STDAPI_(BOOL) FSetRegKeyValue(HKEY hk, WCHAR* pwsz);
 
-STDAPI_(BOOL) FOpenPrinter(LPCWSTR pwszPrinter, LPHANDLE phandle);
-STDAPI_(BOOL) FGetPrinterSettings(HANDLE hprinter, LPWSTR *ppwszProcessor, LPWSTR *ppwszDevice, LPWSTR *ppwszOutput, LPDEVMODEW *ppdvmode, DWORD *pcbSize);
+//STDAPI_(BOOL) FOpenPrinter(LPCWSTR pwszPrinter, LPHANDLE phandle);
+//STDAPI_(BOOL) FGetPrinterSettings(HANDLE hprinter, LPWSTR *ppwszProcessor, LPWSTR *ppwszDevice, LPWSTR *ppwszOutput, LPDEVMODEW *ppdvmode, DWORD *pcbSize);
 
-STDAPI DsoGetFileFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
-       LPCWSTR pwzFilter, DWORD dwFiltIdx, LPCWSTR pwszDefExt, LPCWSTR pwszCurrentItem, BOOL fShowSave,
-       BSTR *pbstrFile, BOOL *pfReadOnly);
+//STDAPI DsoGetFileFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
+//       LPCWSTR pwzFilter, DWORD dwFiltIdx, LPCWSTR pwszDefExt, LPCWSTR pwszCurrentItem, BOOL fShowSave,
+//       BSTR *pbstrFile, BOOL *pfReadOnly);
 
-STDAPI DsoGetOleInsertObjectFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
-        BOOL fDocObjectOnly, BOOL fAllowControls, BSTR *pbstrResult, UINT *ptype);
+//STDAPI DsoGetOleInsertObjectFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
+//        BOOL fDocObjectOnly, BOOL fAllowControls, BSTR *pbstrResult, UINT *ptype);
 
 ////////////////////////////////////////////////////////////////////////
 // Common macros -- Used to make code more readable.
@@ -154,28 +154,28 @@ BOOL       __fastcall DsoPVarBoolFromPVar(VARIANT* px, BOOL fdef);
 #ifdef _DEBUG
 
 #define ASSERT(x)  if(!(x)) DebugBreak()
-#define ODS(x)	OutputDebugString(x)
+#define ODS(x)	// OutputDebugString(x)
 
-#define TRACE1(sz, arg1) { \
+#define TRACE1(sz, arg1) /*{ \
 	CHAR ach[1024]; \
 	wsprintf(ach, (sz), (arg1)); \
-	ODS(ach); }
+	ODS(ach); }*/
 
-#define TRACE2(sz, arg1, arg2) { \
+#define TRACE2(sz, arg1, arg2) /*{ \
 	CHAR ach[1024]; \
 	wsprintf(ach, (sz), (arg1), (arg2)); \
-	ODS(ach); }
+	ODS(ach); }*/
 
-#define TRACE3(sz, arg1, arg2, arg3) { \
+#define TRACE3(sz, arg1, arg2, arg3) /*{ \
 	CHAR ach[1024]; \
 	wsprintf(ach, (sz), (arg1), (arg2), (arg3)); \
-	ODS(ach); }
+	ODS(ach); }*/
 
-#define TRACE_LPRECT(sz, lprc) { \
+#define TRACE_LPRECT(sz, lprc) /*{ \
 	CHAR ach[1024]; \
 	wsprintf(ach, "RECT %s - left=%d, top=%d, right=%d, bottom=%d\n", \
 		(sz), (lprc)->left, (lprc)->top, (lprc)->right, (lprc)->bottom); \
-	ODS(ach); }
+	ODS(ach); }*/
 
 #else // !defined(_DEBUG)
 
