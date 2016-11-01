@@ -5,10 +5,11 @@
 
 #include <QObject>
 #include <QString>
+#include <QRect>
 
 class libOEFPrivate;
 
-class LIBOEF_EXPORT libOEF : public QObject
+class libOEF : public QObject
 {
 	Q_OBJECT
 	Q_DECLARE_PRIVATE(libOEF)
@@ -20,7 +21,7 @@ public:
 
 
 public:
-	int open(long hwndContainer, QString filePath, bool readOnly = true, QString progID = "");
+	int open(long hwndContainer, QRect rect, QString filePath, bool readOnly = true, QString progID = "");
 
 	void close(long hwndContainer);
 
@@ -30,6 +31,7 @@ private:
 
 private:
 	libOEFPrivate *d_ptr;
+	static libOEF* _instance;
 };
 
 #endif // LIBOEF_H

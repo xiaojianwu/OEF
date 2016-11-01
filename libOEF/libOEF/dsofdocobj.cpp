@@ -20,6 +20,10 @@ CDsoDocObject::CDsoDocObject()
 	ODS("CDsoDocObject::CDsoDocObject\n");
 	m_cRef = 1;
 	m_fDisplayTools = TRUE;
+
+	m_pstgroot = nullptr;
+	m_pwszHostName = nullptr;
+	m_pprtprv = nullptr;
 }
 
 CDsoDocObject::~CDsoDocObject(void)
@@ -28,8 +32,8 @@ CDsoDocObject::~CDsoDocObject(void)
 	if (m_pole)	Close();
 	if (m_hwnd) DestroyWindow(m_hwnd);
 
-	SAFE_FREESTRING(m_pwszUsername);
-	SAFE_FREESTRING(m_pwszPassword);
+	//SAFE_FREESTRING(m_pwszUsername);
+	//SAFE_FREESTRING(m_pwszPassword);
 	SAFE_FREESTRING(m_pwszHostName);
 
     SAFE_RELEASE_INTERFACE(m_pstgroot);
@@ -87,7 +91,7 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
  // This is protected by a critical section just for fun. The fact we had to single
  // instance the OCX because of the host hook makes having multiple instances conflict here
  // very unlikely. However, that could change sometime, so better to be safe than sorry.
-	EnterCriticalSection(&v_csecThreadSynch);
+	//EnterCriticalSection(&v_csecThreadSynch);
 
 	if (GetClassInfo(v_hModule, L"DSOFramerDocWnd", &wndclass) == 0)
 	{
@@ -101,7 +105,7 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
 			hr = E_WIN32_LASTERROR;
 	}
 
-	LeaveCriticalSection(&v_csecThreadSynch);
+	//LeaveCriticalSection(&v_csecThreadSynch);
 	if (FAILED(hr)) return hr;
 	
  // Get the position RECT (and validate as needed)...

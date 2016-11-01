@@ -2,6 +2,27 @@
  * DSOFRAMER.H
  *
  * Developer Support Office ActiveX Document Framer Control Sample
+ *
+ *  Copyright ?999-2004; Microsoft Corporation. All rights reserved.
+ *  Written by Microsoft Developer Support Office Integration (PSS DSOI)
+ * 
+ *  This code is provided via KB 311765 as a sample. It is not a formal
+ *  product and has not been tested with all containers or servers. Use it
+ *  for educational purposes only.
+ *
+ *  You have a royalty-free right to use, modify, reproduce and distribute
+ *  this sample application, and/or any modified version, in any way you
+ *  find useful, provided that you agree that Microsoft has no warranty,
+ *  obligations or liability for the code or information provided herein.
+ *
+ *  THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ *  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  See the EULA.TXT file included in the KB download for full terms of use
+ *  and restrictions. You should consult documentation on MSDN Library for
+ *  possible updates or changes to behaviors or interfaces used in this sample.
+ *
  ***************************************************************************/
 #ifndef DS_DSOFRAMER_H 
 #define DS_DSOFRAMER_H
@@ -34,14 +55,15 @@
 #include "utilities.h"
 #include "dsofdocobj.h"
 
+
 ////////////////////////////////////////////////////////////////////
 // Global Variables
 //
 extern HINSTANCE        v_hModule;
-extern CRITICAL_SECTION v_csecThreadSynch;
+//extern CRITICAL_SECTION v_csecThreadSynch;
 extern HICON            v_icoOffDocIcon;
 extern ULONG            v_cLocks;
-extern BOOL             v_fUnicodeAPI;
+//extern BOOL             v_fUnicodeAPI;
 extern BOOL             v_fWindows2KPlus;
 
 ////////////////////////////////////////////////////////////////////
@@ -100,6 +122,163 @@ extern BOOL             v_fWindows2KPlus;
 #endif
 
 #define SYNCPAINT_TIMER_ID         4
+
+
+////////////////////////////////////////////////////////////////////
+// CDsoFramerControl -- Main Control (OCX) Object 
+//
+//  The CDsoFramerControl control is standard OLE control designed around 
+//  the OCX94 specification. Because we plan on doing custom integration to 
+//  act as both OLE object and OLE host, it does not use frameworks like ATL 
+//  or MFC which would only complicate the nature of the sample.
+//
+//  The control inherits from its automation interface, but uses nested 
+//  classes for all OLE interfaces. This is not a requirement but does help
+//  to clearly seperate the tasks done by each interface and makes finding 
+//  ref count problems easier to spot since each interface carries its own
+//  counter and will assert (in debug) if interface is over or under released.
+//  
+//  The control is basically a stage for the ActiveDocument embedding, and 
+//  handles any external (user) commands. The task of actually acting as
+//  a DocObject host is done in the site object CDsoDocObject, which this 
+//  class creates and uses for the embedding.
+//
+class CDsoFramerControl : public IUnknown
+{
+public:
+	CDsoFramerControl();
+    ~CDsoFramerControl(void);
+
+	// IUnknown Implementation
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) { return S_OK; }
+	STDMETHODIMP_(ULONG) AddRef(void) { return 0; }
+	STDMETHODIMP_(ULONG) Release(void) { return 0; }
+
+
+ // _FramerControl Implementation
+    STDMETHODIMP Activate();
+	HRESULT Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect);
+
+    STDMETHODIMP Save(VARIANT SaveAsDocument, VARIANT OverwriteExisting);
+	HRESULT Close();
+
+ // IDsoDocObjectSite Implementation (for DocObject Callbacks to control)
+    BEGIN_INTERFACE_PART(DsoDocObjectSite, IDsoDocObjectSite)
+        STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void **ppv);
+        STDMETHODIMP GetWindow(HWND* phWnd);
+        STDMETHODIMP GetBorder(LPRECT prcBorder);
+        STDMETHODIMP GetHostName(LPWSTR *ppwszHostName);
+        STDMETHODIMP SysMenuCommand(UINT uiCharCode);
+        STDMETHODIMP SetStatusText(LPCOLESTR pszText);
+    END_INTERFACE_PART(DsoDocObjectSite)
+
+    STDMETHODIMP           InitializeNewInstance();
+
+    STDMETHODIMP           InPlaceActivate(LONG lVerb);
+    STDMETHODIMP           UIActivate(BOOL fForceUIActive);
+    void    SetInPlaceVisible(BOOL fShow);
+    void    UpdateModalState(BOOL fModeless, BOOL fNotifyIPObject);
+    void    UpdateInteractiveState(BOOL fActive);
+    void    EnableDropFile(BOOL fEnable);
+
+    void    OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
+    void    OnDestroyWindow();
+    void    OnResize();
+    void    OnTimer(UINT id);
+
+    void    OnForegroundCompChange(BOOL fCompActive);
+    void    OnAppActivationChange(BOOL fActive, DWORD dwThreadID);
+    void    OnComponentActivationChange(BOOL fActivate);
+    void    OnCtrlFocusChange(BOOL fCtlGotFocus, HWND hFocusWnd);
+    void    OnUIFocusChange(BOOL fUIActive);
+
+
+    void    RaiseActivationEvent(BOOL fActive);
+
+    STDMETHODIMP           ProvideErrorInfo(HRESULT hres);
+    STDMETHODIMP           RaiseAutomationEvent(DISPID did, ULONG cargs, VARIANT *pvtargs);
+
+    STDMETHODIMP           SetTempServerLock(BOOL fLock);
+	STDMETHODIMP           ResetFrameHook(HWND hwndFrameWindow);
+
+
+ // The control window proceedure is handled through static class method.
+    static LRESULT ControlWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+ // Force redaw of all child windows...
+	BOOL InvalidateAllChildWindows(HWND hwnd);
+	static BOOL InvalidateAllChildWindowsCallback(HWND hwnd, LPARAM lParam);
+
+ // The variables for the control are kept private but accessible to the
+ // nested classes for each interface.
+private:
+
+    ULONG                   m_cRef;				   // Reference count
+    IUnknown               *m_pOuterUnknown;       // Outer IUnknown (points to m_xInternalUnknown if not agg)
+    ITypeInfo              *m_ptiDispType;         // ITypeInfo Pointer (IDispatch Impl)
+    EXCEPINFO              *m_pDispExcep;          // EXCEPINFO Pointer (IDispatch Impl)
+
+    HWND                    m_hwnd;                // our window
+    HWND                    m_hwndParent;          // immediate parent window
+    SIZEL                   m_Size;                // the size of this control  
+    RECT                    m_rcLocation;          // where we at
+
+    IOleClientSite         *m_pClientSite;         // active client site of host containter
+    IOleControlSite        *m_pControlSite;        // control site
+    IOleInPlaceSite        *m_pInPlaceSite;        // inplace site
+    IOleInPlaceFrame       *m_pInPlaceFrame;       // inplace frame
+    IOleInPlaceUIWindow    *m_pInPlaceUIWindow;    // inplace ui window
+
+    IAdviseSink            *m_pViewAdviseSink;     // advise sink for view (only 1 allowed)
+    IOleAdviseHolder       *m_pOleAdviseHolder;    // OLE advise holder (for oleobject sinks)
+    IDataAdviseHolder      *m_pDataAdviseHolder;   // OLE data advise holder (for dataobject sink)
+    IDispatch              *m_dispEvents;          // event sink (we only support 1 at a time)
+    IStorage               *m_pOleStorage;         // IStorage for OLE hosts.
+
+    CDsoDocObject          *m_pDocObjFrame;        // The Embedding Class
+    CDsoDocObject          *m_pServerLock;         // Optional Server Lock for out-of-proc DocObject
+
+    BSTR                    m_bstrCustomCaption;   // A custom caption (if provided)
+    HMENU                   m_hmenuFilePopup;      // The File menu popup
+    WORD                    m_wFileMenuFlags;      // Bitflags of enabled file menu items.
+    WORD                    m_wSelMenuItem;        // Which item (if any) is selected
+    WORD                    m_cMenuItems;          // Count of items on menu bar
+    RECT                    m_rgrcMenuItems[DSO_MAX_MENUITEMS]; // Menu bar items
+    CHAR                    m_rgchMenuAccel[DSO_MAX_MENUITEMS]; // Menu bar accelerators
+    LPWSTR                  m_pwszHostName;        // Custom name for SetHostNames
+
+    class CDsoFrameHookManager*  m_pHookManager;   // Frame Window Hook Manager Class
+	LONG                    m_lHookPolicy;         // Policy on how to use frame hook for this host.
+	LONG                    m_lActivationPolicy;   // Policy on activation behavior for comp focus
+	HBITMAP                 m_hbmDeactive;         // Bitmap used for IPDeactiveOnXXX policies
+    UINT                    m_uiSyncPaint;         // Sync paint counter for draw issues with UIDeactivateOnXXX
+
+    unsigned int        m_fDirty:1;                // does the control need to be resaved?
+    unsigned int        m_fInPlaceActive:1;        // are we in place active or not?
+    unsigned int        m_fInPlaceVisible:1;       // we are in place visible or not?
+    unsigned int        m_fUIActive:1;             // are we UI active or not.
+    unsigned int        m_fHasFocus:1;             // do we have current focus.
+    unsigned int        m_fViewAdvisePrimeFirst: 1;// for IViewobject2::setadvise
+    unsigned int        m_fViewAdviseOnlyOnce: 1;  // for IViewobject2::setadvise
+    unsigned int        m_fUsingWindowRgn:1;       // for SetObjectRects and clipping
+    unsigned int        m_fFreezeEvents:1;         // should events be frozen?
+    unsigned int        m_fDesignMode:1;           // are we in design mode?
+    unsigned int        m_fModeFlagValid:1;        // has mode changed since last check?
+    unsigned int        m_fModalState:1;           // are we modal?
+    unsigned int        m_fObjectMenu:1;           // are we over obj menu item?
+    unsigned int        m_fConCntDone:1;           // for enum connectpts
+    unsigned int        m_fAppActive:1;            // is the app active?
+    unsigned int        m_fComponentActive:1;      // is the component active?
+    unsigned int        m_fInDocumentLoad:1;       // set when loading file
+    unsigned int        m_fNoInteractive:1;        // set when we don't allow interaction with docobj
+    unsigned int        m_fSyncPaintTimer:1;       // is syncpaint timer running?
+    unsigned int        m_fInControlActivate:1;    // is currently in activation call?
+    unsigned int        m_fInFocusChange:1;        // are we in a focus change?
+    unsigned int        m_fActivateOnStatus:1;     // we need to activate on change of status 
+    unsigned int        m_fDisableMenuAccel:1;     // using menu accelerators
+    unsigned int        m_fBkgrdPaintTimer:1;      // using menu accelerators
+
+};
 
 
 ////////////////////////////////////////////////////////////////////

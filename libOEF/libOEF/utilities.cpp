@@ -24,9 +24,9 @@ STDAPI_(void) DsoMemFree(LPVOID ptr)
         HeapFree(v_hPrivateHeap, 0, ptr);
 }
 
-void * _cdecl operator new(size_t size){ return DsoMemAlloc(size);}
-void  _cdecl operator delete(void *ptr){ DsoMemFree(ptr); }
-int __cdecl _purecall(){__asm{int 3}; return 0;}
+//void * _cdecl operator new(size_t size){ return DsoMemAlloc(size);}
+//void  _cdecl operator delete(void *ptr){ DsoMemFree(ptr); }
+//int __cdecl _purecall(){__asm{int 3}; return 0;}
 
 ////////////////////////////////////////////////////////////////////////
 // Global String Functions
@@ -326,19 +326,19 @@ STDAPI_(UINT) DsoCompareStringsEx(LPCWSTR pwsz1, INT cch1, LPCWSTR pwsz2, INT cc
  // Now ask the OS to check the strings and give us its read. (We prefer checking
  // in Unicode since this is faster and we may have strings that can't be thunked
  // down to the local ANSI code page)...
-	if (v_fUnicodeAPI)
-	{
+	//if (v_fUnicodeAPI)
+	//{
 		iret = CompareStringW(lcid, NORM_IGNORECASE | NORM_IGNOREWIDTH, pwsz1, cblen1, pwsz2, cblen2);
-	}
-	else
-	{
-	 // If we are on Win9x, we don't have much of choice (thunk the call)...
-		LPSTR psz1 = DsoConvertToMBCS(pwsz1);
-		LPSTR psz2 = DsoConvertToMBCS(pwsz2);
-		iret = CompareStringA(lcid, NORM_IGNORECASE, psz1, -1, psz2, -1);
-		DsoMemFree(psz2);
-		DsoMemFree(psz1);
-	}
+	//}
+	//else
+	//{
+	// // If we are on Win9x, we don't have much of choice (thunk the call)...
+	//	LPSTR psz1 = DsoConvertToMBCS(pwsz1);
+	//	LPSTR psz2 = DsoConvertToMBCS(pwsz2);
+	//	iret = CompareStringA(lcid, NORM_IGNORECASE, psz1, -1, psz2, -1);
+	//	DsoMemFree(psz2);
+	//	DsoMemFree(psz1);
+	//}
 
 	return iret;
 }
@@ -730,16 +730,16 @@ BOOL __fastcall DsoPVarBoolFromPVar(VARIANT* px, BOOL fdef)
 STDAPI_(BOOL) FFileExists(WCHAR* wzPath)
 {
     DWORD dw = 0xFFFFFFFF;
-    if (v_fUnicodeAPI)
-    {
+    //if (v_fUnicodeAPI)
+    //{
         dw = GetFileAttributesW(wzPath);
-    }
-    else
-    {
-		LPSTR psz = DsoConvertToMBCS(wzPath);
-        if (psz) dw = GetFileAttributesA(psz);
-		DsoMemFree(psz);
-	}
+ //   }
+ //   else
+ //   {
+	//	LPSTR psz = DsoConvertToMBCS(wzPath);
+ //       if (psz) dw = GetFileAttributesA(psz);
+	//	DsoMemFree(psz);
+	//}
     return (dw != 0xFFFFFFFF);
 }
 
@@ -753,16 +753,16 @@ STDAPI_(BOOL) FOpenLocalFile(WCHAR* wzFilePath, DWORD dwAccess, DWORD dwShareMod
 {
     CHECK_NULL_RETURN(phFile, FALSE);
     *phFile = INVALID_HANDLE_VALUE;
-    if (v_fUnicodeAPI)
-    {
+    //if (v_fUnicodeAPI)
+    //{
 	    *phFile = CreateFileW(wzFilePath, dwAccess, dwShareMode, NULL, dwCreate, FILE_ATTRIBUTE_NORMAL, NULL);
-    }
-    else
-    {
-        LPSTR psz = DsoConvertToMBCS(wzFilePath);
-        if (psz) *phFile = CreateFileA(psz, dwAccess, dwShareMode, NULL, dwCreate, FILE_ATTRIBUTE_NORMAL, NULL);
-        DsoMemFree(psz);
-    }
+    //}
+    //else
+    //{
+    //    LPSTR psz = DsoConvertToMBCS(wzFilePath);
+    //    if (psz) *phFile = CreateFileA(psz, dwAccess, dwShareMode, NULL, dwCreate, FILE_ATTRIBUTE_NORMAL, NULL);
+    //    DsoMemFree(psz);
+    //}
     return (*phFile != INVALID_HANDLE_VALUE);
 }
 
@@ -779,8 +779,8 @@ STDAPI_(BOOL) FOpenLocalFile(WCHAR* wzFilePath, DWORD dwAccess, DWORD dwShareMod
 STDAPI_(BOOL) FPerformShellOp(DWORD dwOp, WCHAR* wzFrom, WCHAR* wzTo)
 {
 	BOOL f = FALSE;
-    if (v_fUnicodeAPI)
-    {
+    //if (v_fUnicodeAPI)
+    //{
 		switch (dwOp)
 		{
 		case FO_COPY:		f = CopyFileW(wzFrom, wzTo, FALSE);	break;
@@ -788,23 +788,23 @@ STDAPI_(BOOL) FPerformShellOp(DWORD dwOp, WCHAR* wzFrom, WCHAR* wzTo)
 		case FO_RENAME:		f = MoveFileW(wzFrom, wzTo);		break;
 		case FO_DELETE:		f = DeleteFileW(wzFrom);			break;
 		}
-	}
-    else
-    {
-	    LPSTR pszFrom = DsoConvertToMBCS(wzFrom);
-	    LPSTR pszTo = DsoConvertToMBCS(wzTo);
+	//}
+ //   else
+ //   {
+	//    LPSTR pszFrom = DsoConvertToMBCS(wzFrom);
+	//    LPSTR pszTo = DsoConvertToMBCS(wzTo);
 
-		switch (dwOp)
-		{
-		case FO_COPY:		f = CopyFileA(pszFrom, pszTo, FALSE); break;
-		case FO_MOVE:
-		case FO_RENAME:		f = MoveFileA(pszFrom, pszTo);		break;
-		case FO_DELETE:		f = DeleteFileA(pszFrom);			break;
-		}
+	//	switch (dwOp)
+	//	{
+	//	case FO_COPY:		f = CopyFileA(pszFrom, pszTo, FALSE); break;
+	//	case FO_MOVE:
+	//	case FO_RENAME:		f = MoveFileA(pszFrom, pszTo);		break;
+	//	case FO_DELETE:		f = DeleteFileA(pszFrom);			break;
+	//	}
 
-	    if (pszFrom) DsoMemFree(pszFrom);
-	    if (pszTo) DsoMemFree(pszTo);
-    }
+	//    if (pszFrom) DsoMemFree(pszFrom);
+	//    if (pszTo) DsoMemFree(pszTo);
+ //   }
 
 	return f;
 }
@@ -915,16 +915,16 @@ STDAPI_(BOOL) FPerformShellOp(DWORD dwOp, WCHAR* wzFrom, WCHAR* wzTo)
 STDAPI_(BOOL) FDrawText(HDC hdc, WCHAR* pwsz, LPRECT prc, UINT fmt)
 {
 	BOOL f;
-    if (v_fUnicodeAPI)
-    {
+    //if (v_fUnicodeAPI)
+    //{
         f = (BOOL)DrawTextW(hdc, pwsz, -1, prc, fmt);
-    }
-    else
-    {
-		LPSTR psz = DsoConvertToMBCS(pwsz);
-		f = (BOOL)DrawTextA(hdc, psz, -1, prc, fmt);
-		DsoMemFree(psz);
-    }
+  //  }
+  //  else
+  //  {
+		//LPSTR psz = DsoConvertToMBCS(pwsz);
+		//f = (BOOL)DrawTextA(hdc, psz, -1, prc, fmt);
+		//DsoMemFree(psz);
+  //  }
 	return f;
 }
 

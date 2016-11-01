@@ -22,8 +22,9 @@ void test::on_pushButton_open_clicked()
 	QString filePath = QFileDialog::getOpenFileName();
 
 	long winId = ui.widget->winId();
+	QRect rect = ui.widget->rect();
 
-	libOEF::instance()->open(winId, filePath, false, "PowerPoint.Show");
+	libOEF::instance()->open(winId, rect, filePath, false, "PowerPoint.Show");
 
 
 }

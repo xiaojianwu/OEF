@@ -2,6 +2,10 @@
 
 #include <QHash>
 
+#define INITGUID // Init the GUIDS for the control...
+
+#include "dsoframer.h"
+
 class libOEFPrivate {
 
 
@@ -17,19 +21,21 @@ public:
 	QHash<long, OEInfo> m_hashOE;
 };
 
+libOEF* libOEF::_instance = nullptr;
 libOEF *libOEF::instance()
 {
-	static libOEF _instance;
-	return &_instance;
+	_instance = new libOEF;
+	return _instance;
 }
 
 
 libOEF::libOEF() 
 {
 	d_ptr = new libOEFPrivate();
+
 }
 
-int libOEF::open(long hwndContainer, QString filePath, bool readOnly, QString progID)
+int libOEF::open(long hwndContainer, QRect rect,  QString filePath, bool readOnly, QString progID)
 {
 	libOEFPrivate::OEInfo info;
 	info.hwndContainer = hwndContainer;
@@ -38,6 +44,18 @@ int libOEF::open(long hwndContainer, QString filePath, bool readOnly, QString pr
 	info.progID = progID;
 
 	d_ptr->m_hashOE[hwndContainer] = info;
+
+	CDsoFramerControl* dso = new CDsoFramerControl;
+
+	RECT rectDst;
+	rectDst.left = rect.left();
+	rectDst.top = rect.top();
+	rectDst.right = rect.right();
+	rectDst.bottom = rect.bottom();
+	
+
+	dso->Open((LPWSTR)filePath.utf16(), readOnly, (LPWSTR)progID.utf16(), (HWND)hwndContainer, rectDst);
+	//CDsoDocObject::CreateInstance();
 
 	return 0;
 }
