@@ -18,11 +18,15 @@ BOOL             v_fWindows2KPlus = FALSE;
 
 CDsoFramerControl::CDsoFramerControl()
 {
+	v_hPrivateHeap = HeapCreate(0, 0x1000, 0);
 	m_pDocObjFrame = nullptr;
 	m_hwnd = NULL;
+	m_hwndParent = NULL;
+
 	m_pwszHostName = nullptr;
 
 	m_pHookManager = nullptr;
+	m_pClientSite = nullptr;
 }
 
 CDsoFramerControl::~CDsoFramerControl(void)

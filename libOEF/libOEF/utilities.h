@@ -42,7 +42,7 @@ STDAPI_(UINT)   DsoCompareStringsEx(LPCWSTR pwsz1, INT cch1, LPCWSTR pwsz2, INT 
 STDAPI_(LPWSTR) DsoCopyString(LPCWSTR pwszString);
 STDAPI_(LPWSTR) DsoCopyStringCat(LPCWSTR pwszString1, LPCWSTR pwszString2);
 STDAPI_(LPWSTR) DsoCopyStringCatEx(LPCWSTR pwszBaseString, UINT cStrs, LPCWSTR *ppwszStrs);
-STDAPI_(LPSTR)  DsoCLSIDtoLPSTR(REFCLSID clsid);
+STDAPI_(LPWSTR)  DsoCLSIDtoLPWSTR(REFCLSID clsid);
 
 ////////////////////////////////////////////////////////////////////////
 // URL Helpers

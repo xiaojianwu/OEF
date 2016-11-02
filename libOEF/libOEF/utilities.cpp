@@ -262,13 +262,13 @@ STDAPI_(LPWSTR) DsoCopyStringCatEx(LPCWSTR pwszBaseString, UINT cStrs, LPCWSTR *
 ////////////////////////////////////////////////////////////////////////
 // DsoCLSIDtoLPSTR
 //
-STDAPI_(LPSTR) DsoCLSIDtoLPSTR(REFCLSID clsid)
+STDAPI_(LPWSTR) DsoCLSIDtoLPWSTR(REFCLSID clsid)
 {
-	LPSTR psz = NULL;
+	LPWSTR psz = NULL;
 	LPWSTR pwsz;
 	if (SUCCEEDED(StringFromCLSID(clsid, &pwsz)))
 	{
-		psz = DsoConvertToMBCS(pwsz);
+		psz = DsoCopyString(pwsz);
 		CoTaskMemFree(pwsz);
 	}
     return psz;

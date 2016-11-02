@@ -24,6 +24,13 @@ CDsoDocObject::CDsoDocObject()
 	m_pstgroot = nullptr;
 	m_pwszHostName = nullptr;
 	m_pprtprv = nullptr;
+	m_pdocv = nullptr;
+	m_pstmview = nullptr;
+	m_pipactive = nullptr;
+	m_pipobj = nullptr;
+
+
+	m_hwndIPObject = NULL;
 }
 
 CDsoDocObject::~CDsoDocObject(void)
@@ -1599,7 +1606,7 @@ STDMETHODIMP CDsoDocObject::ValidateDocObjectServer(REFCLSID rclsid)
 {
 	HRESULT hr = DSO_E_INVALIDSERVER;
 	WCHAR  szKeyCheck[256];
-	LPSTR pszClsid;
+	LPWSTR pszClsid;
 	HKEY  hkey;
 
  // We don't handle MSHTML even though it is DocObject server. If you plan
@@ -1608,7 +1615,7 @@ STDMETHODIMP CDsoDocObject::ValidateDocObjectServer(REFCLSID rclsid)
         return hr;
 
  // Convert the CLSID to a string and check for DocObject sub key...
-	if (pszClsid = DsoCLSIDtoLPSTR(rclsid))
+	if (pszClsid = DsoCLSIDtoLPWSTR(rclsid))
 	{
 		wsprintf(szKeyCheck, L"CLSID\\%s\\DocObject", pszClsid);
 
@@ -1636,7 +1643,7 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
     LPWSTR pwszExt = NULL;
     //LPWSTR pwszType = NULL;
     LPWSTR pszType = NULL;
-    LPSTR pszClsid;
+    LPWSTR pszClsid;
 	WCHAR szkey[255];
 	WCHAR szbuf[255];
 	HKEY hk;
@@ -1644,7 +1651,7 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
     if ((ppwszFileType == NULL) && (ppwszFileExt == NULL))
         return FALSE;
 
-    pszClsid = DsoCLSIDtoLPSTR(m_clsidObject);
+    pszClsid = DsoCLSIDtoLPWSTR(m_clsidObject);
     if (!pszClsid) return FALSE;
 
 	wsprintf(szkey, L"CLSID\\%s\\DefaultExtension", pszClsid);
