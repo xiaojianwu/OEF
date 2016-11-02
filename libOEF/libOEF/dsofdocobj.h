@@ -172,7 +172,6 @@ public:
     STDMETHODIMP  CreateDocObject(REFCLSID rclsid);
     STDMETHODIMP  CreateDocObject(IStorage *pstg);
     STDMETHODIMP  CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts);
-    //STDMETHODIMP  CreateFromURL(LPWSTR pwszUrlFile, REFCLSID rclsid, LPBIND_OPTS pbndopts, LPWSTR pwszUserName, LPWSTR pwszPassword);
     STDMETHODIMP  CreateFromRunningObject(LPUNKNOWN punkObj, LPWSTR pwszObjectName, LPBIND_OPTS pbndopts);
     STDMETHODIMP  IPActivateView();
     STDMETHODIMP  IPDeactivateView();
@@ -181,7 +180,6 @@ public:
 	STDMETHODIMP_(BOOL) IsDirty();
     STDMETHODIMP  Save();
     STDMETHODIMP  SaveToFile(LPWSTR pwszFile, BOOL fOverwriteFile);
-    //STDMETHODIMP  SaveToURL(LPWSTR pwszURL, BOOL fOverwriteFile, LPWSTR pwszUserName, LPWSTR pwszPassword);
     STDMETHODIMP  PrintDocument(LPCWSTR pwszPrinter, LPCWSTR pwszOutput, UINT cCopies, UINT nFrom, UINT nTo, BOOL fPromptUser);
     //STDMETHODIMP  StartPrintPreview();
     STDMETHODIMP  ExitPrintPreview(BOOL fForceExit);
@@ -194,9 +192,6 @@ public:
     STDMETHODIMP_(void) OnNotifyPaletteChanged(HWND hwndPalChg);
     STDMETHODIMP_(void) OnNotifyChangeToolState(BOOL fShowTools);
     STDMETHODIMP_(void) OnNotifyControlFocus(BOOL fGotFocus);
-   
-    //STDMETHODIMP  HrGetDataFromObject(VARIANT *pvtType, VARIANT *pvtOutput);
-    //STDMETHODIMP  HrSetDataInObject(VARIANT *pvtType, VARIANT *pvtInput, BOOL fMbcsString);
 
     STDMETHODIMP_(BOOL) GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt);
 

@@ -159,6 +159,9 @@ public:
     STDMETHODIMP Activate();
 	HRESULT Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect);
 
+	void    OnResize(RECT dstRect);
+
+
     STDMETHODIMP Save(VARIANT SaveAsDocument, VARIANT OverwriteExisting);
 	HRESULT Close();
 
@@ -183,7 +186,7 @@ public:
 
     void    OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
     void    OnDestroyWindow();
-    void    OnResize();
+    
     void    OnTimer(UINT id);
 
     void    OnForegroundCompChange(BOOL fCompActive);

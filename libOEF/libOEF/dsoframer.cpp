@@ -65,9 +65,6 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 	m_hwnd = hwndParent;
 	m_rcLocation = dstRect;
 	HRESULT   hr;
-	//LPWSTR    pwszDocument = LPWSTR_FROM_VARIANT(Document);
-	//LPWSTR    pwszAltProgId = LPWSTR_FROM_VARIANT(ProgId);
-	//BOOL      fOpenReadOnly = BOOL_FROM_VARIANT(ReadOnly, FALSE);
 	CLSID     clsidAlt = GUID_NULL;
 	HCURSOR	  hCur;
 	IUnknown* punk = NULL;
@@ -162,6 +159,23 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 	m_fInDocumentLoad = FALSE;
 	SetCursor(hCur);
 	return hr;
+}
+
+
+//
+void CDsoFramerControl::OnResize(RECT dstRect)
+{
+	m_rcLocation = dstRect;
+
+	RECT rcPlace;
+	ODS("CDsoFramerControl::OnResize\n");
+	if (m_pDocObjFrame)
+	{
+		//if (FChangeObjActiveOnFocusChange() && (!m_fUIActive))
+		//	UIActivate(FALSE);
+
+		m_pDocObjFrame->OnNotifySizeChange(&dstRect);
+	}
 }
 
 

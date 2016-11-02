@@ -80,8 +80,24 @@ void libOEF::close(long hwndContainer)
 			info.dso->Close();
 		}
 	}
-	
-	
+}
+
+void libOEF::resize(long hwndContainer, QRect rect)
+{
+	if (d_ptr->m_hashOE.contains(hwndContainer))
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			RECT rectDst;
+			rectDst.left = rect.left();
+			rectDst.top = rect.top();
+			rectDst.right = rect.right();
+			rectDst.bottom = rect.bottom();
+
+			info.dso->OnResize(rectDst);
+		}
+	}
 }
 
 void libOEF::release()

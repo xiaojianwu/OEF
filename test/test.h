@@ -4,6 +4,8 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_test.h"
 
+#include <QResizeEvent>
+
 class test : public QMainWindow
 {
 	Q_OBJECT
@@ -15,6 +17,9 @@ public:
 private Q_SLOTS:
 void on_pushButton_open_clicked();
 void on_pushButton_close_clicked();
+
+protected:
+	virtual void resizeEvent(QResizeEvent *event);
 
 private:
 	Ui::testClass ui;

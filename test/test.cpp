@@ -35,3 +35,12 @@ void test::on_pushButton_close_clicked()
 	libOEF::instance()->close(winId);
 }
 
+void test::resizeEvent(QResizeEvent *event)
+{
+	event->accept();
+
+	long winId = ui.widget->winId();
+	QRect rect = ui.widget->rect();
+	libOEF::instance()->resize(winId, rect);
+}
+

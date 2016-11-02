@@ -25,6 +25,8 @@ public:
 
 	void close(long hwndContainer);
 
+	void resize(long hwndContainer, QRect rect);
+
 
 private:
 	libOEF();
