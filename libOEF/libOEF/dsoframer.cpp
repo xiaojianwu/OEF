@@ -200,6 +200,8 @@ STDMETHODIMP CDsoFramerControl::Activate()
 {
 	HRESULT hr = S_OK;
 	ODS("CDsoFramerControl::Activate\n");
+
+	//TODO:
 	
 	return hr;
 }

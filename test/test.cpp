@@ -28,3 +28,10 @@ void test::on_pushButton_open_clicked()
 
 
 }
+
+void test::on_pushButton_close_clicked()
+{
+	long winId = ui.widget->winId();
+	libOEF::instance()->close(winId);
+}
+

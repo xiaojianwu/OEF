@@ -156,11 +156,6 @@ public:
         STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void **ppv);
     END_INTERFACE_PART(ServiceProvider)
 
- // IAuthenticate  Implementation
-    BEGIN_INTERFACE_PART(Authenticate , IAuthenticate)
-        STDMETHODIMP Authenticate(HWND *phwnd, LPWSTR *pszUsername, LPWSTR *pszPassword);
-    END_INTERFACE_PART(Authenticate)
-
  // IContinueCallback Implementation
     BEGIN_INTERFACE_PART(ContinueCallback , IContinueCallback)
         STDMETHODIMP FContinue(void);
@@ -216,7 +211,7 @@ public:
     inline HMENU        GetActiveMenu(){return m_hMenuActive;}
 	inline HMENU        GetMergedMenu(){return m_hMenuMerged;}
 	inline void         SetMergedMenu(HMENU h){m_hMenuMerged = h;}
-    inline LPCWSTR      GetSourceName(){return ((m_pwszWebResource) ? m_pwszWebResource : m_pwszSourceFile);}
+    inline LPCWSTR      GetSourceName(){return m_pwszSourceFile;}
     inline LPCWSTR      GetSourceDocName(){return ((m_pwszSourceFile) ? &m_pwszSourceFile[m_idxSourceName] : NULL);}
 
 	inline int getLastErrorCode() { return m_lastErrorCode; }
@@ -259,19 +254,9 @@ protected:
 
     STDMETHODIMP             EnsureOleServerRunning(BOOL fLockRunning);
     STDMETHODIMP_(void)      FreeRunningLock();
-    STDMETHODIMP_(void)      TurnOffWebToolbar(BOOL fTurnedOff);
     STDMETHODIMP_(void)      ClearMergedMenu();
     STDMETHODIMP_(DWORD)     CalcDocNameIndex(LPCWSTR pwszPath);
     STDMETHODIMP_(void)      CheckForPPTPreviewChange();
-
- // These functions allow the component to access files in a Web Folder for 
- // write access using the Microsoft Provider for Internet Publishing (MSDAIPP), 
- // which is installed by Office and comes standard in Windows 2000/ME/XP/2003. The
- // provider is not required to use the component, only if you wish to save to 
- // an FPSE or DAV Web Folder (URL). 
-    //STDMETHODIMP_(IUnknown*) CreateIPPBindResource();
-    //STDMETHODIMP             IPPDownloadWebResource(LPWSTR pwszURL, LPWSTR pwszFile, IStream** ppstmKeepForSave);
-    //STDMETHODIMP             IPPUploadWebResource(LPWSTR pwszFile, IStream** ppstmSave, LPWSTR pwszURLSaveTo, BOOL fOverwriteFile);
 
     static STDMETHODIMP_(LRESULT)  FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -295,12 +280,6 @@ private:
     IStorage            *m_pstgroot;            // Root temp storage
     IStorage            *m_pstgfile;            // In-memory file storage
     IStream             *m_pstmview;            // In-memory view info stream
-
-    LPWSTR               m_pwszWebResource;     // The full URL to the web resource
-    IStream             *m_pstmWebResource;     // Original Download Stream (if open/save URL)
-    IUnknown            *m_punkIPPResource;     // MSDAIPP provider resource (for URL authoring)
-    LPWSTR               m_pwszUsername;        // Username and password used by MSDAIPP
-    LPWSTR               m_pwszPassword;        // for Authentication (see IAuthenticate)
 
     IOleObject              *m_pole;            // Embedded OLE Object (OLE)
     IOleInPlaceObject       *m_pipobj;          // The IP object methods (OLE)

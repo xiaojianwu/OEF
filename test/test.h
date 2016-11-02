@@ -14,6 +14,7 @@ public:
 
 private Q_SLOTS:
 void on_pushButton_open_clicked();
+void on_pushButton_close_clicked();
 
 private:
 	Ui::testClass ui;

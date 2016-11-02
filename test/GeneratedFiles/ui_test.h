@@ -31,6 +31,7 @@ public:
     QVBoxLayout *verticalLayout;
     QWidget *widget;
     QPushButton *pushButton_open;
+    QPushButton *pushButton_close;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -56,6 +57,11 @@ public:
 
         verticalLayout->addWidget(pushButton_open);
 
+        pushButton_close = new QPushButton(centralWidget);
+        pushButton_close->setObjectName(QStringLiteral("pushButton_close"));
+
+        verticalLayout->addWidget(pushButton_close);
+
         testClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(testClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -77,6 +83,7 @@ public:
     {
         testClass->setWindowTitle(QApplication::translate("testClass", "test", 0));
         pushButton_open->setText(QApplication::translate("testClass", "\346\211\223\345\274\200", 0));
+        pushButton_close->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));
     } // retranslateUi
 
 };

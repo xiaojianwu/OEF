@@ -17,6 +17,12 @@ public:
 		QString filePath;
 		bool readOnly;
 		QString progID;
+		CDsoFramerControl* dso;
+
+		OEInfo()
+		{
+			dso = nullptr;
+		}
 	};
 	QHash<long, OEInfo> m_hashOE;
 };
@@ -24,7 +30,11 @@ public:
 libOEF* libOEF::_instance = nullptr;
 libOEF *libOEF::instance()
 {
-	_instance = new libOEF;
+	if (_instance == nullptr)
+	{
+		_instance = new libOEF;
+	}
+	
 	return _instance;
 }
 
@@ -43,9 +53,10 @@ int libOEF::open(long hwndContainer, QRect rect,  QString filePath, bool readOnl
 	info.readOnly = readOnly;
 	info.progID = progID;
 
-	d_ptr->m_hashOE[hwndContainer] = info;
-
 	CDsoFramerControl* dso = new CDsoFramerControl;
+	info.dso = dso;
+
+	d_ptr->m_hashOE[hwndContainer] = info;
 
 	RECT rectDst;
 	rectDst.left = rect.left();
@@ -55,14 +66,22 @@ int libOEF::open(long hwndContainer, QRect rect,  QString filePath, bool readOnl
 	
 
 	dso->Open((LPWSTR)filePath.utf16(), readOnly, (LPWSTR)progID.utf16(), (HWND)hwndContainer, rectDst);
-	//CDsoDocObject::CreateInstance();
 
 	return 0;
 }
 
 void libOEF::close(long hwndContainer)
 {
-
+	if (d_ptr->m_hashOE.contains(hwndContainer))
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			info.dso->Close();
+		}
+	}
+	
+	
 }
 
 void libOEF::release()
