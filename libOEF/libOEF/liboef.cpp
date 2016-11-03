@@ -1,10 +1,27 @@
-#include "liboef.h"
+// libOEF.cpp : 定义 DLL 应用程序的导出函数。
+//
 
-#include <QHash>
+#include "stdafx.h"
+#include "libOEF.h"
+
+
+// 这是导出变量的一个示例
+LIBOEF_API int nlibOEF=0;
+
+// 这是导出函数的一个示例。
+LIBOEF_API int fnlibOEF(void)
+{
+    return 42;
+}
+
+// 这是已导出类的构造函数。
+// 有关类定义的信息，请参阅 libOEF.h
 
 #define INITGUID // Init the GUIDS for the control...
 
 #include "dsoframer.h"
+
+#include <map>
 
 class libOEFPrivate {
 
@@ -14,9 +31,6 @@ public:
 	struct OEInfo
 	{
 		long hwndContainer;
-		QString filePath;
-		bool readOnly;
-		QString progID;
 		CDsoFramerControl* dso;
 
 		OEInfo()
@@ -24,66 +38,56 @@ public:
 			dso = nullptr;
 		}
 	};
-	QHash<long, OEInfo> m_hashOE;
+	std::map<long, OEInfo> m_hashOE;
 };
 
-libOEF* libOEF::_instance = nullptr;
-libOEF *libOEF::instance()
+ClibOEF* ClibOEF::_instance = nullptr;
+ClibOEF *ClibOEF::instance()
 {
 	if (_instance == nullptr)
 	{
-		_instance = new libOEF;
+		_instance = new ClibOEF;
 	}
-	
+
 	return _instance;
 }
 
 
-libOEF::libOEF() 
+ClibOEF::ClibOEF()
 {
 	d_ptr = new libOEFPrivate();
 
 }
 
-int libOEF::open(long hwndContainer, QRect rect,  QString filePath, bool readOnly, QString progID)
+int ClibOEF::open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly, LPWSTR progID)
 {
 	libOEFPrivate::OEInfo info;
 	info.hwndContainer = hwndContainer;
-	info.filePath = filePath;
-	info.readOnly = readOnly;
-	info.progID = progID;
 
 	CDsoFramerControl* dso = new CDsoFramerControl;
 	info.dso = dso;
 
 	d_ptr->m_hashOE[hwndContainer] = info;
 
-	RECT rectDst;
-	rectDst.left = rect.left();
-	rectDst.top = rect.top();
-	rectDst.right = rect.right();
-	rectDst.bottom = rect.bottom();
-	
-
-	return dso->Open((LPWSTR)filePath.utf16(), readOnly, (LPWSTR)progID.utf16(), (HWND)hwndContainer, rectDst);
+	return dso->Open(filePath, readOnly, progID, (HWND)hwndContainer, rect);
 }
 
-void libOEF::close(long hwndContainer)
+void ClibOEF::close(long hwndContainer)
 {
-	if (d_ptr->m_hashOE.contains(hwndContainer))
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
 	{
 		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
 		if (info.dso)
 		{
 			info.dso->Close();
-			d_ptr->m_hashOE.remove(hwndContainer);
+			d_ptr->m_hashOE.erase(hwndContainer);
 		}
 	}
 }
 
-void libOEF::active(long hwndContainer)
+void ClibOEF::active(long hwndContainer)
 {
-	if (d_ptr->m_hashOE.contains(hwndContainer))
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
 	{
 		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
 		if (info.dso)
@@ -93,25 +97,20 @@ void libOEF::active(long hwndContainer)
 	}
 }
 
-void libOEF::resize(long hwndContainer, QRect rect)
+void ClibOEF::resize(long hwndContainer, RECT rect)
 {
-	if (d_ptr->m_hashOE.contains(hwndContainer))
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
 	{
 		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
 		if (info.dso)
 		{
-			RECT rectDst;
-			rectDst.left = rect.left();
-			rectDst.top = rect.top();
-			rectDst.right = rect.right();
-			rectDst.bottom = rect.bottom();
-
-			info.dso->OnResize(rectDst);
+			info.dso->OnResize(rect);
 		}
 	}
 }
 
-void libOEF::release()
+void ClibOEF::release()
 {
 
 }
+

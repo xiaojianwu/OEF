@@ -7,18 +7,8 @@
 #include "dsoframer.h"
 
 
-
-HINSTANCE        v_hModule = NULL;   // DLL module handle
-HANDLE           v_hPrivateHeap = NULL;   // Private Memory Heap
-ULONG            v_cLocks = 0;      // Count of server locks
-HICON            v_icoOffDocIcon = NULL;   // Small office icon (for caption bar)
-//BOOL             v_fUnicodeAPI = FALSE;  // Flag to determine if we should us Unicode API
-BOOL             v_fWindows2KPlus = FALSE;
-//CRITICAL_SECTION v_csecThreadSynch;
-
 CDsoFramerControl::CDsoFramerControl()
 {
-	v_hPrivateHeap = HeapCreate(0, 0x1000, 0);
 	m_pDocObjFrame = nullptr;
 	m_hwnd = NULL;
 	m_hwndParent = NULL;

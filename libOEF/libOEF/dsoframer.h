@@ -61,10 +61,7 @@
 //
 extern HINSTANCE        v_hModule;
 //extern CRITICAL_SECTION v_csecThreadSynch;
-extern HICON            v_icoOffDocIcon;
 extern ULONG            v_cLocks;
-//extern BOOL             v_fUnicodeAPI;
-extern BOOL             v_fWindows2KPlus;
 
 ////////////////////////////////////////////////////////////////////
 // Custom Errors - we support a very limited set of custom error messages

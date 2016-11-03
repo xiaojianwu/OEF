@@ -1,82 +1,69 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
+    <Filter Include="源文件">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;cxx;c;def</Extensions>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="头文件">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Form Files">
-      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
-      <Extensions>ui</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
-      <Extensions>qrc;*</Extensions>
-      <ParseFiles>false</ParseFiles>
-    </Filter>
-    <Filter Include="Generated Files">
-      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
-      <Extensions>moc;h;cpp</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Generated Files\Debug">
-      <UniqueIdentifier>{98f70bc2-a220-4e83-8f16-96482a87478f}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Generated Files\Release">
-      <UniqueIdentifier>{e3453a55-81d5-43d2-a4c3-bac431978f60}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="liboef.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_liboef.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_liboef.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="dsoframer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dsofdocobj.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dsofprint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="liboef_global.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="libOEF.h">
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="dsofdocobj.h">
-      <Filter>Header Files</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="utilities.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="dsoframer.h">
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ipprevw.h">
-      <Filter>Header Files</Filter>
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rbbinder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="liboef.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="dsoframer.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="libOEF.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dsofdocobj.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dsofprint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dsoframer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
