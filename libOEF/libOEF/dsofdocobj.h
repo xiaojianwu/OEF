@@ -209,7 +209,6 @@ public:
     inline LPCWSTR      GetSourceName(){return m_pwszSourceFile;}
     inline LPCWSTR      GetSourceDocName(){return ((m_pwszSourceFile) ? &m_pwszSourceFile[m_idxSourceName] : NULL);}
 
-	inline int getLastErrorCode() { return m_lastErrorCode; }
     inline CLSID*       GetServerCLSID(){return &m_clsidObject;}
     inline BOOL         IsIPActive(){return (m_pipobj != NULL);}
 
@@ -291,8 +290,6 @@ private:
     HWND                 m_hwndUIActiveObj;     // UI Active object window
     DWORD                m_dwObjectThreadID;    // Thread Id of UI server
     BORDERWIDTHS         m_bwToolSpace;         // Toolspace...
-
-	unsigned long m_lastErrorCode;
 
  // Bitflags (state info)...
     unsigned int         m_fDisplayTools:1;

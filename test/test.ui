@@ -6,31 +6,59 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>977</width>
-    <height>734</height>
+    <width>1043</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>test</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QWidget" name="widget" native="true"/>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <zorder>pushButton_open</zorder>
+        <zorder>pushButton_close</zorder>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_open">
+        <property name="text">
+         <string>打开</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_close">
+        <property name="text">
+         <string>关闭</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton_open">
-      <property name="text">
-       <string>打开</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pushButton_close">
-      <property name="text">
-       <string>关闭</string>
-      </property>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QWidget" name="widget_2" native="true"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_open_2">
+        <property name="text">
+         <string>打开</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_close_2">
+        <property name="text">
+         <string>关闭</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -39,7 +67,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>977</width>
+     <width>1043</width>
      <height>23</height>
     </rect>
    </property>

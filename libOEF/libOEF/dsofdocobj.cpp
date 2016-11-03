@@ -146,9 +146,11 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
     (m_psiteCtl = phost)->AddRef();
 
     m_psiteCtl->QueryInterface(IID_IOleCommandTarget, (void**)&m_pcmdCtl);
-    m_psiteCtl->GetHostName(&m_pwszHostName);
+    
     if (m_pwszHostName == NULL)
         m_pwszHostName = DsoCopyString(L"DsoFramerControl");
+
+	m_psiteCtl->GetHostName(&m_pwszHostName);
 
 	return S_OK;
 }
@@ -312,8 +314,6 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
 	IStorage        *pstg    = NULL;
 	BOOL fLoadFromAltCLSID   = (rclsid != GUID_NULL);
 
-	m_lastErrorCode = 1;
-
  // Sanity check of parameters...
 	if (!(pwszFile) || ((*pwszFile) == L'\0') || (pbndopts == NULL))
 		return E_INVALIDARG;
@@ -326,7 +326,6 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
  // and GetClassFile failed, then we error out...
 	if (FAILED(GetClassFile(pwszFile, &clsid)) && !(fLoadFromAltCLSID))
 	{
-		m_lastErrorCode = DSO_E_INVALIDSERVER;
 		return DSO_E_INVALIDSERVER;
 	}
 		
@@ -341,7 +340,6 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
  // Validate that we have a DocObject server...
 	if ((clsid == GUID_NULL) || FAILED(ValidateDocObjectServer(clsid)))
 	{
-		m_lastErrorCode = DSO_E_INVALIDSERVER;
 		return DSO_E_INVALIDSERVER;
 	}
 

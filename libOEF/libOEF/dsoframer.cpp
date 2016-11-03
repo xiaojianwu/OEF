@@ -27,6 +27,10 @@ CDsoFramerControl::CDsoFramerControl()
 
 	m_pHookManager = nullptr;
 	m_pClientSite = nullptr;
+
+	m_fInControlActivate = FALSE;
+	m_fComponentActive = FALSE;
+	m_fUIActive = FALSE;
 }
 
 CDsoFramerControl::~CDsoFramerControl(void)
@@ -35,15 +39,15 @@ CDsoFramerControl::~CDsoFramerControl(void)
 
 	SAFE_RELEASE_INTERFACE(m_ptiDispType);
 	SAFE_RELEASE_INTERFACE(m_pClientSite);
-	SAFE_RELEASE_INTERFACE(m_pControlSite);
-	SAFE_RELEASE_INTERFACE(m_pInPlaceSite);
-	SAFE_RELEASE_INTERFACE(m_pInPlaceFrame);
-	SAFE_RELEASE_INTERFACE(m_pInPlaceUIWindow);
-	SAFE_RELEASE_INTERFACE(m_pViewAdviseSink);
-	SAFE_RELEASE_INTERFACE(m_pOleAdviseHolder);
-	SAFE_RELEASE_INTERFACE(m_pDataAdviseHolder);
-	SAFE_RELEASE_INTERFACE(m_dispEvents);
-	SAFE_RELEASE_INTERFACE(m_pOleStorage);
+	//SAFE_RELEASE_INTERFACE(m_pControlSite);
+	//SAFE_RELEASE_INTERFACE(m_pInPlaceSite);
+	//SAFE_RELEASE_INTERFACE(m_pInPlaceFrame);
+	//SAFE_RELEASE_INTERFACE(m_pInPlaceUIWindow);
+	//SAFE_RELEASE_INTERFACE(m_pViewAdviseSink);
+	//SAFE_RELEASE_INTERFACE(m_pOleAdviseHolder);
+	//SAFE_RELEASE_INTERFACE(m_pDataAdviseHolder);
+	//SAFE_RELEASE_INTERFACE(m_dispEvents);
+	//SAFE_RELEASE_INTERFACE(m_pOleStorage);
 	SAFE_FREESTRING(m_pwszHostName);
 }
 
@@ -113,7 +117,7 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 
 	// Start a wait operation to notify user...
 	hCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
-	m_fInDocumentLoad = TRUE;
+	//m_fInDocumentLoad = TRUE;
 
 	// Setup the bind options based on read-only flag....
 	bopts.grfMode = (STGM_TRANSACTED | STGM_SHARE_DENY_WRITE | (fOpenReadOnly ? STGM_READ : STGM_READWRITE));
@@ -146,9 +150,9 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 		// Force a close if an error occurred...
 		if (FAILED(hr))
 		{
-			m_fFreezeEvents = TRUE;
+			//m_fFreezeEvents = TRUE;
 			Close();
-			m_fFreezeEvents = FALSE;
+			//m_fFreezeEvents = FALSE;
 		}
 		else
 		{
@@ -156,7 +160,7 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 			Activate();
 		}
 
-	m_fInDocumentLoad = FALSE;
+	//m_fInDocumentLoad = FALSE;
 	SetCursor(hCur);
 	return hr;
 }
@@ -167,7 +171,6 @@ void CDsoFramerControl::OnResize(RECT dstRect)
 {
 	m_rcLocation = dstRect;
 
-	RECT rcPlace;
 	ODS("CDsoFramerControl::OnResize\n");
 	if (m_pDocObjFrame)
 	{
@@ -212,12 +215,100 @@ HRESULT CDsoFramerControl::Close()
 //
 STDMETHODIMP CDsoFramerControl::Activate()
 {
-	HRESULT hr = S_OK;
+	HRESULT hr;
+
+	return S_OK;
+
 	ODS("CDsoFramerControl::Activate\n");
 
-	//TODO:
-	
+	if (m_fInControlActivate)
+		return S_FALSE;
+
+	// Don't allow recursion of this function or we could get stuck in
+	// loop trying to constantly grab focus.
+	m_fInControlActivate = TRUE;
+
+	// All we need to do is grab focus. This will tell the host to
+	// UI activate our OCX, set focus to our window, and set this control
+	// as the active component with the hook manager. 
+	hr = UIActivate(TRUE);
+
+	// Invalidate windows to update painting...
+	if (SUCCEEDED(hr))
+		InvalidateAllChildWindows(m_hwnd);
+
+	m_fInControlActivate = FALSE;
+
 	return hr;
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// CDsoFramerControl::UIActivate
+//
+//  Make sure our control is UI Active and set as ActiveObject for host.
+//
+HRESULT CDsoFramerControl::UIActivate(BOOL fForceUIActive)
+{
+	HRESULT hr = S_FALSE;
+	TRACE1("CDsoFramerControl::UIActivate(fForceUIActive=%d)\n", fForceUIActive);
+
+	// We can't do anything if we aren't inplace active and visible!
+	//if (!(m_fInPlaceActive) || !(m_fInPlaceVisible))
+	//	return E_UNEXPECTED;
+
+	// If we are not already UI active or are being asked to force it, do the call
+	if ((!(m_fUIActive) || (fForceUIActive)) /*&& (m_pInPlaceSite)*/)
+	{
+		m_fUIActive = TRUE;
+
+		// inform the container of our intent
+		//hr = m_pInPlaceSite->OnUIActivate();
+
+		if (SUCCEEDED(hr) || (fForceUIActive))
+		{
+			// take the focus  [which is what UI Activation is all about !]
+			SetFocus(m_hwnd);
+
+			// we have to explicitly say we don't wany any border space.
+			//if (m_pInPlaceFrame)
+			//	m_pInPlaceFrame->SetBorderSpace(NULL);
+
+			//if (m_pInPlaceUIWindow)
+			//	m_pInPlaceUIWindow->SetBorderSpace(NULL);
+
+			// Ensure docobj component state is active as well...
+			if (!m_fComponentActive)
+			{
+				// Tell manager we are the active component now...
+				if (m_pHookManager) m_pHookManager->SetActiveComponent(m_hwnd);
+				//else OnComponentActivationChange(TRUE);
+			}
+		}
+	}
+
+	return hr;
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// CDsoFramerControl::InvalidateAllChildWindows
+//
+//  Invalidate all child windows attached to the window passed.
+//
+BOOL CDsoFramerControl::InvalidateAllChildWindows(HWND hwnd)
+{
+	ODS("CDsoFramerControl::InvalidateAllChildWindows()\n");
+	//typedef BOOL(CALLBACK* WNDENUMPROC)(HWND, LPARAM);
+	return EnumChildWindows(hwnd, (WNDENUMPROC)InvalidateAllChildWindowsCallback, 0);
+}
+
+BOOL CDsoFramerControl::InvalidateAllChildWindowsCallback(HWND hwnd, LPARAM)
+{
+	RECT rc;
+	GetClientRect(hwnd, &rc);
+	InvalidateRect(hwnd, &rc, TRUE);
+	return TRUE;
 }
 
 
@@ -301,7 +392,7 @@ STDMETHODIMP CDsoFramerControl::XDsoDocObjectSite::SetStatusText(LPCOLESTR pszTe
 
 	// If m_fActivateOnStatus flag is set, see if we are not UI active. If not, try to activate...
 	if ((pThis->m_fActivateOnStatus) && (pThis->m_fComponentActive) && (pThis->m_fAppActive) &&
-		!(pThis->m_fUIActive) && !(pThis->m_fModalState))
+		!(pThis->m_fUIActive)/* && !(pThis->m_fModalState)*/)
 	{
 		ODS(" -- ForceUIActiveFromSetStatusText --\n");
 		pThis->m_fActivateOnStatus = FALSE;

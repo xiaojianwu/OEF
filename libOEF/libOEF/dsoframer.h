@@ -178,7 +178,7 @@ public:
     STDMETHODIMP           InitializeNewInstance();
 
     STDMETHODIMP           InPlaceActivate(LONG lVerb);
-    STDMETHODIMP           UIActivate(BOOL fForceUIActive);
+	HRESULT           UIActivate(BOOL fForceUIActive);
     void    SetInPlaceVisible(BOOL fShow);
     void    UpdateModalState(BOOL fModeless, BOOL fNotifyIPObject);
     void    UpdateInteractiveState(BOOL fActive);
@@ -196,30 +196,30 @@ public:
     void    OnUIFocusChange(BOOL fUIActive);
 
 
-    void    RaiseActivationEvent(BOOL fActive);
+    //void    RaiseActivationEvent(BOOL fActive);
 
-    STDMETHODIMP           ProvideErrorInfo(HRESULT hres);
-    STDMETHODIMP           RaiseAutomationEvent(DISPID did, ULONG cargs, VARIANT *pvtargs);
+    //STDMETHODIMP           ProvideErrorInfo(HRESULT hres);
+    //STDMETHODIMP           RaiseAutomationEvent(DISPID did, ULONG cargs, VARIANT *pvtargs);
 
-    STDMETHODIMP           SetTempServerLock(BOOL fLock);
-	STDMETHODIMP           ResetFrameHook(HWND hwndFrameWindow);
+    //STDMETHODIMP           SetTempServerLock(BOOL fLock);
+	//STDMETHODIMP           ResetFrameHook(HWND hwndFrameWindow);
 
 
  // The control window proceedure is handled through static class method.
-    static LRESULT ControlWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    //static LRESULT ControlWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
  // Force redaw of all child windows...
 	BOOL InvalidateAllChildWindows(HWND hwnd);
-	static BOOL InvalidateAllChildWindowsCallback(HWND hwnd, LPARAM lParam);
+	static BOOL InvalidateAllChildWindowsCallback(HWND, LPARAM);
 
  // The variables for the control are kept private but accessible to the
  // nested classes for each interface.
 private:
 
-    ULONG                   m_cRef;				   // Reference count
-    IUnknown               *m_pOuterUnknown;       // Outer IUnknown (points to m_xInternalUnknown if not agg)
+    //ULONG                   m_cRef;				   // Reference count
+    //IUnknown               *m_pOuterUnknown;       // Outer IUnknown (points to m_xInternalUnknown if not agg)
     ITypeInfo              *m_ptiDispType;         // ITypeInfo Pointer (IDispatch Impl)
-    EXCEPINFO              *m_pDispExcep;          // EXCEPINFO Pointer (IDispatch Impl)
+    //EXCEPINFO              *m_pDispExcep;          // EXCEPINFO Pointer (IDispatch Impl)
 
     HWND                    m_hwnd;                // our window
     HWND                    m_hwndParent;          // immediate parent window
@@ -227,59 +227,59 @@ private:
     RECT                    m_rcLocation;          // where we at
 
     IOleClientSite         *m_pClientSite;         // active client site of host containter
-    IOleControlSite        *m_pControlSite;        // control site
-    IOleInPlaceSite        *m_pInPlaceSite;        // inplace site
-    IOleInPlaceFrame       *m_pInPlaceFrame;       // inplace frame
-    IOleInPlaceUIWindow    *m_pInPlaceUIWindow;    // inplace ui window
+    //IOleControlSite        *m_pControlSite;        // control site
+    //IOleInPlaceSite        *m_pInPlaceSite;        // inplace site
+    //IOleInPlaceFrame       *m_pInPlaceFrame;       // inplace frame
+    //IOleInPlaceUIWindow    *m_pInPlaceUIWindow;    // inplace ui window
 
-    IAdviseSink            *m_pViewAdviseSink;     // advise sink for view (only 1 allowed)
-    IOleAdviseHolder       *m_pOleAdviseHolder;    // OLE advise holder (for oleobject sinks)
-    IDataAdviseHolder      *m_pDataAdviseHolder;   // OLE data advise holder (for dataobject sink)
-    IDispatch              *m_dispEvents;          // event sink (we only support 1 at a time)
-    IStorage               *m_pOleStorage;         // IStorage for OLE hosts.
+    //IAdviseSink            *m_pViewAdviseSink;     // advise sink for view (only 1 allowed)
+    //IOleAdviseHolder       *m_pOleAdviseHolder;    // OLE advise holder (for oleobject sinks)
+    //IDataAdviseHolder      *m_pDataAdviseHolder;   // OLE data advise holder (for dataobject sink)
+    //IDispatch              *m_dispEvents;          // event sink (we only support 1 at a time)
+    //IStorage               *m_pOleStorage;         // IStorage for OLE hosts.
 
     CDsoDocObject          *m_pDocObjFrame;        // The Embedding Class
     CDsoDocObject          *m_pServerLock;         // Optional Server Lock for out-of-proc DocObject
 
-    BSTR                    m_bstrCustomCaption;   // A custom caption (if provided)
-    HMENU                   m_hmenuFilePopup;      // The File menu popup
-    WORD                    m_wFileMenuFlags;      // Bitflags of enabled file menu items.
-    WORD                    m_wSelMenuItem;        // Which item (if any) is selected
-    WORD                    m_cMenuItems;          // Count of items on menu bar
-    RECT                    m_rgrcMenuItems[DSO_MAX_MENUITEMS]; // Menu bar items
-    CHAR                    m_rgchMenuAccel[DSO_MAX_MENUITEMS]; // Menu bar accelerators
+    //BSTR                    m_bstrCustomCaption;   // A custom caption (if provided)
+    //HMENU                   m_hmenuFilePopup;      // The File menu popup
+    //WORD                    m_wFileMenuFlags;      // Bitflags of enabled file menu items.
+    //WORD                    m_wSelMenuItem;        // Which item (if any) is selected
+    //WORD                    m_cMenuItems;          // Count of items on menu bar
+    //RECT                    m_rgrcMenuItems[DSO_MAX_MENUITEMS]; // Menu bar items
+    //CHAR                    m_rgchMenuAccel[DSO_MAX_MENUITEMS]; // Menu bar accelerators
     LPWSTR                  m_pwszHostName;        // Custom name for SetHostNames
 
     class CDsoFrameHookManager*  m_pHookManager;   // Frame Window Hook Manager Class
-	LONG                    m_lHookPolicy;         // Policy on how to use frame hook for this host.
-	LONG                    m_lActivationPolicy;   // Policy on activation behavior for comp focus
-	HBITMAP                 m_hbmDeactive;         // Bitmap used for IPDeactiveOnXXX policies
-    UINT                    m_uiSyncPaint;         // Sync paint counter for draw issues with UIDeactivateOnXXX
+	//LONG                    m_lHookPolicy;         // Policy on how to use frame hook for this host.
+	//LONG                    m_lActivationPolicy;   // Policy on activation behavior for comp focus
+	//HBITMAP                 m_hbmDeactive;         // Bitmap used for IPDeactiveOnXXX policies
+    //UINT                    m_uiSyncPaint;         // Sync paint counter for draw issues with UIDeactivateOnXXX
 
-    unsigned int        m_fDirty:1;                // does the control need to be resaved?
-    unsigned int        m_fInPlaceActive:1;        // are we in place active or not?
-    unsigned int        m_fInPlaceVisible:1;       // we are in place visible or not?
+    //unsigned int        m_fDirty:1;                // does the control need to be resaved?
+    //unsigned int        m_fInPlaceActive:1;        // are we in place active or not?
+    //unsigned int        m_fInPlaceVisible:1;       // we are in place visible or not?
     unsigned int        m_fUIActive:1;             // are we UI active or not.
     unsigned int        m_fHasFocus:1;             // do we have current focus.
-    unsigned int        m_fViewAdvisePrimeFirst: 1;// for IViewobject2::setadvise
-    unsigned int        m_fViewAdviseOnlyOnce: 1;  // for IViewobject2::setadvise
-    unsigned int        m_fUsingWindowRgn:1;       // for SetObjectRects and clipping
-    unsigned int        m_fFreezeEvents:1;         // should events be frozen?
-    unsigned int        m_fDesignMode:1;           // are we in design mode?
-    unsigned int        m_fModeFlagValid:1;        // has mode changed since last check?
+    //unsigned int        m_fViewAdvisePrimeFirst: 1;// for IViewobject2::setadvise
+    //unsigned int        m_fViewAdviseOnlyOnce: 1;  // for IViewobject2::setadvise
+    //unsigned int        m_fUsingWindowRgn:1;       // for SetObjectRects and clipping
+    //unsigned int        m_fFreezeEvents:1;         // should events be frozen?
+    //unsigned int        m_fDesignMode:1;           // are we in design mode?
+    //unsigned int        m_fModeFlagValid:1;        // has mode changed since last check?
     unsigned int        m_fModalState:1;           // are we modal?
-    unsigned int        m_fObjectMenu:1;           // are we over obj menu item?
-    unsigned int        m_fConCntDone:1;           // for enum connectpts
+    //unsigned int        m_fObjectMenu:1;           // are we over obj menu item?
+    //unsigned int        m_fConCntDone:1;           // for enum connectpts
     unsigned int        m_fAppActive:1;            // is the app active?
     unsigned int        m_fComponentActive:1;      // is the component active?
-    unsigned int        m_fInDocumentLoad:1;       // set when loading file
-    unsigned int        m_fNoInteractive:1;        // set when we don't allow interaction with docobj
-    unsigned int        m_fSyncPaintTimer:1;       // is syncpaint timer running?
+    //unsigned int        m_fInDocumentLoad:1;       // set when loading file
+    //unsigned int        m_fNoInteractive:1;        // set when we don't allow interaction with docobj
+    //unsigned int        m_fSyncPaintTimer:1;       // is syncpaint timer running?
     unsigned int        m_fInControlActivate:1;    // is currently in activation call?
     unsigned int        m_fInFocusChange:1;        // are we in a focus change?
     unsigned int        m_fActivateOnStatus:1;     // we need to activate on change of status 
-    unsigned int        m_fDisableMenuAccel:1;     // using menu accelerators
-    unsigned int        m_fBkgrdPaintTimer:1;      // using menu accelerators
+    //unsigned int        m_fDisableMenuAccel:1;     // using menu accelerators
+    //unsigned int        m_fBkgrdPaintTimer:1;      // using menu accelerators
 
 };
 

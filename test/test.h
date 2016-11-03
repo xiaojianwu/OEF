@@ -18,6 +18,10 @@ private Q_SLOTS:
 void on_pushButton_open_clicked();
 void on_pushButton_close_clicked();
 
+void on_pushButton_open_2_clicked();
+void on_pushButton_close_2_clicked();
+
+
 protected:
 	virtual void resizeEvent(QResizeEvent *event);
 

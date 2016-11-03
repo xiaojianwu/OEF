@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
@@ -28,10 +29,15 @@ class Ui_testClass
 {
 public:
     QWidget *centralWidget;
+    QHBoxLayout *horizontalLayout;
     QVBoxLayout *verticalLayout;
     QWidget *widget;
     QPushButton *pushButton_open;
     QPushButton *pushButton_close;
+    QVBoxLayout *verticalLayout_2;
+    QWidget *widget_2;
+    QPushButton *pushButton_open_2;
+    QPushButton *pushButton_close_2;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -40,12 +46,15 @@ public:
     {
         if (testClass->objectName().isEmpty())
             testClass->setObjectName(QStringLiteral("testClass"));
-        testClass->resize(977, 734);
+        testClass->resize(1043, 741);
         centralWidget = new QWidget(testClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        verticalLayout = new QVBoxLayout(centralWidget);
+        horizontalLayout = new QHBoxLayout(centralWidget);
+        horizontalLayout->setSpacing(6);
+        horizontalLayout->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(6);
-        verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         widget = new QWidget(centralWidget);
         widget->setObjectName(QStringLiteral("widget"));
@@ -62,10 +71,34 @@ public:
 
         verticalLayout->addWidget(pushButton_close);
 
+
+        horizontalLayout->addLayout(verticalLayout);
+
+        verticalLayout_2 = new QVBoxLayout();
+        verticalLayout_2->setSpacing(6);
+        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
+        widget_2 = new QWidget(centralWidget);
+        widget_2->setObjectName(QStringLiteral("widget_2"));
+
+        verticalLayout_2->addWidget(widget_2);
+
+        pushButton_open_2 = new QPushButton(centralWidget);
+        pushButton_open_2->setObjectName(QStringLiteral("pushButton_open_2"));
+
+        verticalLayout_2->addWidget(pushButton_open_2);
+
+        pushButton_close_2 = new QPushButton(centralWidget);
+        pushButton_close_2->setObjectName(QStringLiteral("pushButton_close_2"));
+
+        verticalLayout_2->addWidget(pushButton_close_2);
+
+
+        horizontalLayout->addLayout(verticalLayout_2);
+
         testClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(testClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 977, 23));
+        menuBar->setGeometry(QRect(0, 0, 1043, 23));
         testClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(testClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -84,6 +117,8 @@ public:
         testClass->setWindowTitle(QApplication::translate("testClass", "test", 0));
         pushButton_open->setText(QApplication::translate("testClass", "\346\211\223\345\274\200", 0));
         pushButton_close->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));
+        pushButton_open_2->setText(QApplication::translate("testClass", "\346\211\223\345\274\200", 0));
+        pushButton_close_2->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));
     } // retranslateUi
 
 };

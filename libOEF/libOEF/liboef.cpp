@@ -65,9 +65,7 @@ int libOEF::open(long hwndContainer, QRect rect,  QString filePath, bool readOnl
 	rectDst.bottom = rect.bottom();
 	
 
-	dso->Open((LPWSTR)filePath.utf16(), readOnly, (LPWSTR)progID.utf16(), (HWND)hwndContainer, rectDst);
-
-	return 0;
+	return dso->Open((LPWSTR)filePath.utf16(), readOnly, (LPWSTR)progID.utf16(), (HWND)hwndContainer, rectDst);
 }
 
 void libOEF::close(long hwndContainer)
@@ -78,6 +76,19 @@ void libOEF::close(long hwndContainer)
 		if (info.dso)
 		{
 			info.dso->Close();
+			d_ptr->m_hashOE.remove(hwndContainer);
+		}
+	}
+}
+
+void libOEF::active(long hwndContainer)
+{
+	if (d_ptr->m_hashOE.contains(hwndContainer))
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			info.dso->Activate();
 		}
 	}
 }
