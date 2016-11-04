@@ -33,6 +33,10 @@ public:
     QVBoxLayout *verticalLayout;
     QWidget *widget;
     QPushButton *pushButton_open;
+    QPushButton *pushButton_play;
+    QPushButton *pushButton_prev;
+    QPushButton *pushButton_next;
+    QPushButton *pushButton_jump;
     QPushButton *pushButton_close;
     QVBoxLayout *verticalLayout_2;
     QWidget *widget_2;
@@ -65,6 +69,26 @@ public:
         pushButton_open->setObjectName(QStringLiteral("pushButton_open"));
 
         verticalLayout->addWidget(pushButton_open);
+
+        pushButton_play = new QPushButton(centralWidget);
+        pushButton_play->setObjectName(QStringLiteral("pushButton_play"));
+
+        verticalLayout->addWidget(pushButton_play);
+
+        pushButton_prev = new QPushButton(centralWidget);
+        pushButton_prev->setObjectName(QStringLiteral("pushButton_prev"));
+
+        verticalLayout->addWidget(pushButton_prev);
+
+        pushButton_next = new QPushButton(centralWidget);
+        pushButton_next->setObjectName(QStringLiteral("pushButton_next"));
+
+        verticalLayout->addWidget(pushButton_next);
+
+        pushButton_jump = new QPushButton(centralWidget);
+        pushButton_jump->setObjectName(QStringLiteral("pushButton_jump"));
+
+        verticalLayout->addWidget(pushButton_jump);
 
         pushButton_close = new QPushButton(centralWidget);
         pushButton_close->setObjectName(QStringLiteral("pushButton_close"));
@@ -116,6 +140,10 @@ public:
     {
         testClass->setWindowTitle(QApplication::translate("testClass", "test", 0));
         pushButton_open->setText(QApplication::translate("testClass", "\346\211\223\345\274\200", 0));
+        pushButton_play->setText(QApplication::translate("testClass", "\346\222\255\346\224\276", 0));
+        pushButton_prev->setText(QApplication::translate("testClass", "\344\270\212\344\270\200\351\241\265", 0));
+        pushButton_next->setText(QApplication::translate("testClass", "\344\270\213\344\270\200\351\241\265", 0));
+        pushButton_jump->setText(QApplication::translate("testClass", "\350\267\263\350\275\254", 0));
         pushButton_close->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));
         pushButton_open_2->setText(QApplication::translate("testClass", "\346\211\223\345\274\200", 0));
         pushButton_close_2->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));

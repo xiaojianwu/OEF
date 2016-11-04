@@ -153,13 +153,13 @@ public:
 
 
  // _FramerControl Implementation
-    STDMETHODIMP Activate();
+	HRESULT Activate();
 	HRESULT Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect);
 
 	void    OnResize(RECT dstRect);
 
 
-    STDMETHODIMP Save(VARIANT SaveAsDocument, VARIANT OverwriteExisting);
+	HRESULT Save(VARIANT SaveAsDocument, VARIANT OverwriteExisting);
 	HRESULT Close();
 
  // IDsoDocObjectSite Implementation (for DocObject Callbacks to control)
@@ -171,6 +171,15 @@ public:
         STDMETHODIMP SysMenuCommand(UINT uiCharCode);
         STDMETHODIMP SetStatusText(LPCOLESTR pszText);
     END_INTERFACE_PART(DsoDocObjectSite)
+
+
+	HWND getHWND() { return m_hwnd; }
+
+	HWND getActiveHWND();
+
+	void reObtainActiveFrame();
+
+	void jumpTo(int pageNo);
 
     STDMETHODIMP           InitializeNewInstance();
 
@@ -299,13 +308,13 @@ public:
 	CDsoFrameWindowHook(){ODS("CDsoFrameWindowHook created\n");m_cHookCount=0;m_hwndTopLevelHost=NULL;m_pfnOrigWndProc=NULL;m_fHostUnicodeWindow=FALSE;}
 	~CDsoFrameWindowHook(){ODS("CDsoFrameWindowHook deleted\n");}
 
-	static STDMETHODIMP_(CDsoFrameWindowHook*) AttachToFrameWindow(HWND hwndParent);
-	STDMETHODIMP Detach();
+	static CDsoFrameWindowHook* AttachToFrameWindow(HWND hwndParent);
+	HRESULT Detach();
 
-	static STDMETHODIMP_(CDsoFrameWindowHook*) GetHookFromWindow(HWND hwnd);
-	inline STDMETHODIMP_(void) AddRef(){InterlockedIncrement((LONG*)&m_cHookCount);}
+	static CDsoFrameWindowHook* GetHookFromWindow(HWND hwnd);
+	inline void AddRef(){InterlockedIncrement((LONG*)&m_cHookCount);}
 
-    static STDMETHODIMP_(LRESULT) 
+    static LRESULT 
 		HostWindowProcHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
@@ -330,21 +339,21 @@ public:
 	CDsoFrameHookManager(){ODS("CDsoFrameHookManager created\n"); m_fAppActive=TRUE; m_idxActive=DSOF_MAX_CONTROLS; m_cComponents=0;}
 	~CDsoFrameHookManager(){ODS("CDsoFrameHookManager deleted\n");}
 
-	static STDMETHODIMP_(CDsoFrameHookManager*)
+	static CDsoFrameHookManager*
 		RegisterFramerControl(HWND hwndParent, HWND hwndControl);
 
-	STDMETHODIMP AddComponent(HWND hwndParent, HWND hwndControl);
-	STDMETHODIMP DetachComponent(HWND hwndControl);
-	STDMETHODIMP SetActiveComponent(HWND hwndControl);
-	STDMETHODIMP OnComponentNotify(DWORD msg, WPARAM wParam, LPARAM lParam);
+	HRESULT AddComponent(HWND hwndParent, HWND hwndControl);
+	HRESULT DetachComponent(HWND hwndControl);
+	HRESULT SetActiveComponent(HWND hwndControl);
+	HRESULT OnComponentNotify(DWORD msg, WPARAM wParam, LPARAM lParam);
 
-	inline STDMETHODIMP_(HWND)
+	inline HWND
 		GetActiveComponentWindow(){return m_pComponents[m_idxActive].hwndControl;}
 
-	inline STDMETHODIMP_(CDsoFrameWindowHook*)
+	inline CDsoFrameWindowHook*
 		GetActiveComponentFrame(){return m_pComponents[m_idxActive].phookFrame;}
 
-	STDMETHODIMP_(BOOL) SendNotifyMessage(HWND hwnd, DWORD msg, WPARAM wParam, LPARAM lParam);
+	BOOL SendNotifyMessage(HWND hwnd, DWORD msg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	BOOL                    m_fAppActive;

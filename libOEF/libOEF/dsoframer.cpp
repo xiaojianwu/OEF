@@ -203,7 +203,7 @@ HRESULT CDsoFramerControl::Close()
 //
 //  Activate the current embedded document (i.e, forward focus).
 //
-STDMETHODIMP CDsoFramerControl::Activate()
+HRESULT CDsoFramerControl::Activate()
 {
 	HRESULT hr;
 
@@ -299,6 +299,33 @@ BOOL CDsoFramerControl::InvalidateAllChildWindowsCallback(HWND hwnd, LPARAM)
 	GetClientRect(hwnd, &rc);
 	InvalidateRect(hwnd, &rc, TRUE);
 	return TRUE;
+}
+
+
+HWND CDsoFramerControl::getActiveHWND()
+{
+	if (m_pDocObjFrame)
+	{
+		return m_pDocObjFrame->GetActiveWindow();
+	}
+	return m_hwnd;
+}
+
+void CDsoFramerControl::reObtainActiveFrame()
+{
+	if (m_pDocObjFrame)
+	{
+		return m_pDocObjFrame->ReObtainActiveWindow();
+	}
+}
+
+
+void CDsoFramerControl::jumpTo(int pageNo)
+{
+	if (m_pDocObjFrame)
+	{
+		return m_pDocObjFrame->jumpTo(pageNo);
+	}
 }
 
 
@@ -406,7 +433,7 @@ CDsoFrameHookManager* vgGlobalManager = NULL;
 //  this is the first time called, the global manager will be created
 //  now.  The manager can handle up to DSOF_MAX_CONTROLS controls (10).
 //
-STDMETHODIMP_(CDsoFrameHookManager*) CDsoFrameHookManager::RegisterFramerControl(HWND hwndParent, HWND hwndControl)
+CDsoFrameHookManager* CDsoFrameHookManager::RegisterFramerControl(HWND hwndParent, HWND hwndControl)
 {
 	CDsoFrameHookManager* pManager = NULL;
 	ODS("CDsoFrameHookManager::RegisterFramerControl\n");
@@ -435,7 +462,7 @@ STDMETHODIMP_(CDsoFrameHookManager*) CDsoFrameHookManager::RegisterFramerControl
 //
 //  Register the component and create the actual frame hook (if needed).
 //
-STDMETHODIMP CDsoFrameHookManager::AddComponent(HWND hwndParent, HWND hwndControl)
+HRESULT CDsoFrameHookManager::AddComponent(HWND hwndParent, HWND hwndControl)
 {
 	DWORD dwHostProcessID;
 	CDsoFrameWindowHook* phook;
@@ -475,7 +502,7 @@ STDMETHODIMP CDsoFrameHookManager::AddComponent(HWND hwndParent, HWND hwndContro
 	return hr;
 }
 
-STDMETHODIMP CDsoFrameHookManager::DetachComponent(HWND hwndControl)
+HRESULT CDsoFrameHookManager::DetachComponent(HWND hwndControl)
 {
 	DWORD dwIndex;
 	CHECK_NULL_RETURN(m_cComponents, E_FAIL);
@@ -525,7 +552,7 @@ STDMETHODIMP CDsoFrameHookManager::DetachComponent(HWND hwndControl)
 	return S_OK;
 }
 
-STDMETHODIMP CDsoFrameHookManager::SetActiveComponent(HWND hwndControl)
+HRESULT CDsoFrameHookManager::SetActiveComponent(HWND hwndControl)
 {
 	ODS(" -- CDsoFrameHookManager::SetActiveComponent -- \n");
 	CHECK_NULL_RETURN(m_cComponents, E_FAIL);
@@ -558,7 +585,7 @@ STDMETHODIMP CDsoFrameHookManager::SetActiveComponent(HWND hwndControl)
 	return S_OK;
 }
 
-STDMETHODIMP CDsoFrameHookManager::OnComponentNotify(DWORD msg, WPARAM wParam, LPARAM lParam)
+HRESULT CDsoFrameHookManager::OnComponentNotify(DWORD msg, WPARAM wParam, LPARAM lParam)
 {
 	TRACE3("CDsoFrameHookManager::OnComponentNotify(%d, %d, %d)\n", msg, wParam, lParam);
 	HWND hwndActiveComp = GetActiveComponentWindow();
@@ -576,7 +603,7 @@ STDMETHODIMP CDsoFrameHookManager::OnComponentNotify(DWORD msg, WPARAM wParam, L
 	return S_OK;
 }
 
-STDMETHODIMP_(BOOL) CDsoFrameHookManager::SendNotifyMessage(HWND hwnd, DWORD msg, WPARAM wParam, LPARAM lParam)
+BOOL CDsoFrameHookManager::SendNotifyMessage(HWND hwnd, DWORD msg, WPARAM wParam, LPARAM lParam)
 {
     BOOL fResult;
 
@@ -604,7 +631,7 @@ STDMETHODIMP_(BOOL) CDsoFrameHookManager::SendNotifyMessage(HWND hwnd, DWORD msg
 //
 //  Creates the frame hook for the host window.
 //
-STDMETHODIMP_(CDsoFrameWindowHook*) CDsoFrameWindowHook::AttachToFrameWindow(HWND hwndParent)
+CDsoFrameWindowHook* CDsoFrameWindowHook::AttachToFrameWindow(HWND hwndParent)
 {
 	CDsoFrameWindowHook* phook = NULL;
 	BOOL fHookSuccess = FALSE;
@@ -667,7 +694,7 @@ STDMETHODIMP_(CDsoFrameWindowHook*) CDsoFrameWindowHook::AttachToFrameWindow(HWN
 //  Removes the hook from the frame window if this is the last control
 //  to reference the hook.
 //
-STDMETHODIMP CDsoFrameWindowHook::Detach()
+HRESULT CDsoFrameWindowHook::Detach()
 {
  // Only need to call this if item is attached.
 	//EnterCriticalSection(&v_csecThreadSynch);
@@ -700,7 +727,7 @@ STDMETHODIMP CDsoFrameWindowHook::Detach()
 //
 //  Returns the hook control associated with this object.
 //
-STDMETHODIMP_(CDsoFrameWindowHook*) CDsoFrameWindowHook::GetHookFromWindow(HWND hwnd)
+CDsoFrameWindowHook* CDsoFrameWindowHook::GetHookFromWindow(HWND hwnd)
 {
 	CDsoFrameWindowHook* phook = (CDsoFrameWindowHook*)GetPropW(hwnd, L"DSOFramerWndHook");
 	if (phook == NULL) phook = (CDsoFrameWindowHook*)GetPropA(hwnd, "DSOFramerWndHook");
@@ -712,7 +739,7 @@ STDMETHODIMP_(CDsoFrameWindowHook*) CDsoFrameWindowHook::GetHookFromWindow(HWND 
 //
 //  The window proc for the subclassed host window.
 //
-STDMETHODIMP_(LRESULT) CDsoFrameWindowHook::HostWindowProcHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CDsoFrameWindowHook::HostWindowProcHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CDsoFrameWindowHook* phook = CDsoFrameWindowHook::GetHookFromWindow(hwnd);
 	if (phook) // We better get our prop for this window!

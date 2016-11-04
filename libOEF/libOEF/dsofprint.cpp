@@ -272,7 +272,7 @@ STDMETHODIMP CDsoDocObject::ExitPrintPreview(BOOL fForceExit)
 //
 //  Used to update control when PPT goes in/out of slideshow asynchronously.
 //
-STDMETHODIMP_(void) CDsoDocObject::CheckForPPTPreviewChange()
+void CDsoDocObject::CheckForPPTPreviewChange()
 {
     if (m_fInPptSlideShow)
     {

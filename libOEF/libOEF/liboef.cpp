@@ -72,6 +72,69 @@ int ClibOEF::open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly,
 	return dso->Open(filePath, readOnly, progID, (HWND)hwndContainer, rect);
 }
 
+#define COMMAND_PPT_RUN		 (0x100AC)
+#define COMMAND_PPT_PAGEDOWN (0x10189)
+#define COMMAND_PPT_PAGEUP	 (0x1018a)
+
+
+// 获取ppt播放窗口句柄
+HWND GetSliderHwnd(HWND hDSOFramerDocWnd)
+{
+
+	// locate the host window of the PowerPoint presentation
+	HWND hChildClass = FindWindowEx(hDSOFramerDocWnd, NULL, L"childClass", NULL);
+	HWND hWndSliderShow = FindWindowEx(hChildClass, NULL, L"childClass", NULL);
+
+	return hWndSliderShow;
+}
+
+
+void ClibOEF::play(long hwndContainer)
+{
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			// start the slideshow
+			SendMessage(info.dso->getActiveHWND(), WM_COMMAND, COMMAND_PPT_RUN, NULL);
+
+			info.dso->reObtainActiveFrame();
+		}
+	}
+}
+
+// 下一页
+void ClibOEF::next(long hwndContainer)
+{
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			SendMessage(info.dso->getActiveHWND(), WM_COMMAND, COMMAND_PPT_PAGEDOWN, NULL);
+		}
+	}
+}
+
+// 上一页
+void ClibOEF::prev(long hwndContainer)
+{
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			SendMessage(info.dso->getActiveHWND(), WM_COMMAND, COMMAND_PPT_PAGEUP, NULL);
+		}
+	}
+}
+
+void ClibOEF::jump(long hwndContainer, int pageNo)
+{
+
+}
+
 void ClibOEF::close(long hwndContainer)
 {
 	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())

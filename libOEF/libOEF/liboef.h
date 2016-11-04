@@ -29,6 +29,15 @@ public:
 public:
 	int open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly = true, LPWSTR progID = L"");
 
+	void play(long hwndContainer);
+
+	void next(long hwndContainer);
+
+	void prev(long hwndContainer);
+
+
+	void jump(long hwndContainer, int pageNo);
+
 	void close(long hwndContainer);
 
 	void active(long hwndContainer);

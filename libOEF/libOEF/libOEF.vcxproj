@@ -150,6 +150,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DispatchPtr.h" />
     <ClInclude Include="dsofdocobj.h" />
     <ClInclude Include="dsoframer.h" />
     <ClInclude Include="ipprevw.h" />

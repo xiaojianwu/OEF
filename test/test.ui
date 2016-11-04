@@ -18,15 +18,40 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QWidget" name="widget" native="true">
-        <zorder>pushButton_open</zorder>
-        <zorder>pushButton_close</zorder>
-       </widget>
+       <widget class="QWidget" name="widget" native="true"/>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_open">
         <property name="text">
          <string>打开</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_play">
+        <property name="text">
+         <string>播放</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_prev">
+        <property name="text">
+         <string>上一页</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_next">
+        <property name="text">
+         <string>下一页</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_jump">
+        <property name="text">
+         <string>跳转</string>
         </property>
        </widget>
       </item>

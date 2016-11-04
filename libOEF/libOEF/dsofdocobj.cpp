@@ -61,7 +61,7 @@ CDsoDocObject::~CDsoDocObject(void)
 //
 //  Static Creation Function.
 //
-STDMETHODIMP_(CDsoDocObject*) CDsoDocObject::CreateInstance(IDsoDocObjectSite* phost)
+CDsoDocObject* CDsoDocObject::CreateInstance(IDsoDocObjectSite* phost)
 {
     ODS("CDsoDocObject::CreateInstance()\n");
     CDsoDocObject* pnew = new CDsoDocObject();
@@ -111,7 +111,7 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
 	{
 		memset(&wndclass, 0, sizeof(WNDCLASS));
 		wndclass.style          = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
-		wndclass.lpfnWndProc    = CDsoDocObject::FrameWindowProc;
+		wndclass.lpfnWndProc    = (WNDPROC)CDsoDocObject::FrameWindowProc;
 		wndclass.hInstance      = v_hModule;
 		wndclass.hCursor        = LoadCursor(NULL, IDC_ARROW);
 		wndclass.lpszClassName  = L"DSOFramerDocWnd";
@@ -655,7 +655,7 @@ STDMETHODIMP CDsoDocObject::UIDeactivateView()
 //
 //  Determines if the file is dirty (by asking IPersistXXX::IsDirty).
 //
-STDMETHODIMP_(BOOL) CDsoDocObject::IsDirty()
+BOOL CDsoDocObject::IsDirty()
 {
 	BOOL fDirty = TRUE; // Assume we are dirty unless object says we are not
 	IPersistStorage *pprststg;
@@ -1010,7 +1010,7 @@ STDMETHODIMP CDsoDocObject::Close()
 //  we'll just set the IP active view rect (minus any toolspace, which
 //  should be none since object is not UI active!). 
 //
-STDMETHODIMP_(void) CDsoDocObject::OnNotifySizeChange(LPRECT prc)
+void CDsoDocObject::OnNotifySizeChange(LPRECT prc)
 {
 	RECT rc;
 
@@ -1052,7 +1052,7 @@ STDMETHODIMP_(void) CDsoDocObject::OnNotifySizeChange(LPRECT prc)
 //  deactive so it can handle window focs and paiting correctly. Failure
 //  to not forward this notification leads to bad behavior.
 // 
-STDMETHODIMP_(void) CDsoDocObject::OnNotifyAppActivate(BOOL fActive, DWORD dwThreadID)
+void CDsoDocObject::OnNotifyAppActivate(BOOL fActive, DWORD dwThreadID)
 {
  // This is critical for DocObject servers, so forward these messages
  // when the object is UI active...
@@ -1069,7 +1069,7 @@ STDMETHODIMP_(void) CDsoDocObject::OnNotifyAppActivate(BOOL fActive, DWORD dwThr
 	m_fAppWindowActive = fActive;
 }
 
-STDMETHODIMP_(void) CDsoDocObject::OnNotifyControlFocus(BOOL fGotFocus)
+void CDsoDocObject::OnNotifyControlFocus(BOOL fGotFocus)
 {
     HWND hwnd;
 
@@ -1099,7 +1099,7 @@ STDMETHODIMP_(void) CDsoDocObject::OnNotifyControlFocus(BOOL fGotFocus)
 //  256 color machines, but not so critical these days when everyone is
 //  running full 32-bit True Color graphic cards.
 // 
-STDMETHODIMP_(void) CDsoDocObject::OnNotifyPaletteChanged(HWND hwndPalChg)
+void CDsoDocObject::OnNotifyPaletteChanged(HWND hwndPalChg)
 {
 	if ((m_fObjectUIActive) && (m_hwndUIActiveObj))
 		SendMessage(m_hwndUIActiveObj, WM_PALETTECHANGED, (WPARAM)hwndPalChg, 0L);
@@ -1110,7 +1110,7 @@ STDMETHODIMP_(void) CDsoDocObject::OnNotifyPaletteChanged(HWND hwndPalChg)
 //
 //  This should be called to get object to show/hide toolbars as needed.
 //
-STDMETHODIMP_(void) CDsoDocObject::OnNotifyChangeToolState(BOOL fShowTools)
+void CDsoDocObject::OnNotifyChangeToolState(BOOL fShowTools)
 {
  // Can't change toolbar state in print preview (sorry)...
     if (InPrintPreview()) return;
@@ -1417,7 +1417,7 @@ STDMETHODIMP CDsoDocObject::ValidateDocObjectServer(REFCLSID rclsid)
 	}
 	else hr = E_OUTOFMEMORY;
 
-	return hr;
+	return S_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1425,7 +1425,7 @@ STDMETHODIMP CDsoDocObject::ValidateDocObjectServer(REFCLSID rclsid)
 //
 //  Returns default file type and extension for a save of embedded object.
 //
-STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt)
+BOOL CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt)
 {
 	DWORD dwType, dwSize;
     LPWSTR pwszExt = NULL;
@@ -1513,7 +1513,7 @@ STDMETHODIMP_(BOOL) CDsoDocObject::GetDocumentTypeAndFileExtension(WCHAR** ppwsz
 //  Adds a default extension to save file path if user didn't provide
 //  one (uses CLSID and registry to determine default extension).
 //
-STDMETHODIMP_(BOOL) CDsoDocObject::ValidateFileExtension(WCHAR* pwszFile, WCHAR** ppwszOut)
+BOOL CDsoDocObject::ValidateFileExtension(WCHAR* pwszFile, WCHAR** ppwszOut)
 {
 	BOOL   fHasExt = FALSE;
 	BOOL   fChangedExt = FALSE;
@@ -1610,7 +1610,7 @@ STDMETHODIMP CDsoDocObject::EnsureOleServerRunning(BOOL fLockRunning)
 //
 //  Free any previous lock made by EnsureOleServerRunning.
 //
-STDMETHODIMP_(void) CDsoDocObject::FreeRunningLock()
+void CDsoDocObject::FreeRunningLock()
 {
 	IRunnableObject *pro;
 	IOleContainer *pocnt;
@@ -1694,7 +1694,7 @@ STDMETHODIMP CDsoDocObject::SetRunningServerLock(BOOL fLock)
 //
 //  Frees the merged menu set by host.
 //
-STDMETHODIMP_(void) CDsoDocObject::ClearMergedMenu()
+void CDsoDocObject::ClearMergedMenu()
 {	
 	if (m_hMenuMerged)
 	{
@@ -1712,7 +1712,7 @@ STDMETHODIMP_(void) CDsoDocObject::ClearMergedMenu()
 //
 //  Calculates position of the name portion of the full path string.
 //
-STDMETHODIMP_(DWORD) CDsoDocObject::CalcDocNameIndex(LPCWSTR pwszPath)
+DWORD CDsoDocObject::CalcDocNameIndex(LPCWSTR pwszPath)
 {
     DWORD cblen, idx = 0;
     if ((pwszPath) && ((cblen = lstrlenW(pwszPath)) > 1))
@@ -1734,7 +1734,7 @@ STDMETHODIMP_(DWORD) CDsoDocObject::CalcDocNameIndex(LPCWSTR pwszPath)
 //
 //  Site drawing (does nothing in this version).
 //
-STDMETHODIMP_(void) CDsoDocObject::OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize)
+void CDsoDocObject::OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize)
 {
 	// Don't have to draw anything, object does all this because we are
 	// always UI active. If we allowed for multiple objects and had some
@@ -1815,13 +1815,13 @@ STDMETHODIMP CDsoDocObject::QueryInterface(REFIID riid, void** ppv)
 	return hr;
 }
 
-STDMETHODIMP_(ULONG) CDsoDocObject::AddRef(void)
+ULONG CDsoDocObject::AddRef(void)
 {
 	TRACE1("CDsoDocObject::AddRef - %d\n", m_cRef + 1);
     return ++m_cRef;
 }
 
-STDMETHODIMP_(ULONG) CDsoDocObject::Release(void)
+ULONG CDsoDocObject::Release(void)
 {
 	TRACE1("CDsoDocObject::Release - %d\n", m_cRef - 1);
 	return --m_cRef;
@@ -2231,6 +2231,22 @@ STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::SetActiveObject(LPOLEINPLACEACTIVE
     return S_OK;
 }
 
+void CDsoDocObject::ReObtainActiveWindow()
+{
+	m_pipactive->GetWindow(&m_hwndUIActiveObj);
+}
+
+void CDsoDocObject::jumpTo(int pageNo)
+{
+	IDispatch* dispatch = NULL;
+	m_pole->QueryInterface(IID_IPersistStorage, (void**)&dispatch);
+
+	//dispatch->Invoke()
+
+	m_pipactive->GetWindow(&m_hwndUIActiveObj);
+}
+
+
 STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::InsertMenus(HMENU hMenu, LPOLEMENUGROUPWIDTHS pMGW)
 {
     ODS("CDsoDocObject::XOleInPlaceFrame::InsertMenus\n");
@@ -2397,7 +2413,7 @@ STDMETHODIMP CDsoDocObject::XPreviewCallback::Notify(DWORD wStatus, LONG nLastPa
 //
 //  Site window procedure. Not much to do here except forward focus.
 //
-STDMETHODIMP_(LRESULT) CDsoDocObject::FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CDsoDocObject::FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CDsoDocObject* pbndr = (CDsoDocObject*)GetWindowLong(hwnd, GWL_USERDATA);
 	if (pbndr)

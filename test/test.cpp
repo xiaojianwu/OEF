@@ -4,6 +4,8 @@
 
 #include "../libOEF/libOEF/liboef.h"
 
+#include <QInputDialog>
+
 #pragma comment(lib, "libOEF.lib")
 
 test::test(QWidget *parent)
@@ -41,6 +43,39 @@ void test::on_pushButton_close_clicked()
 }
 
 
+void test::on_pushButton_play_clicked()
+{
+	long winId = ui.widget->winId();
+	ClibOEF::instance()->play(winId);
+}
+
+void test::on_pushButton_next_clicked()
+{
+	long winId = ui.widget->winId();
+	ClibOEF::instance()->next(winId);
+}
+
+void test::on_pushButton_prev_clicked()
+{
+	long winId = ui.widget->winId();
+	ClibOEF::instance()->prev(winId);
+
+
+
+}
+
+
+void test::on_pushButton_jump_clicked()
+{
+	int pageNo = QInputDialog::getInt(this, tr("Jump to"), tr("page:"), 1, 99);
+	long winId = ui.widget->winId();
+
+	ClibOEF::instance()->jump(winId, pageNo);
+}
+
+
+
+
 void test::on_pushButton_open_2_clicked()
 {
 	QString filePath = QFileDialog::getOpenFileName();
@@ -55,8 +90,6 @@ void test::on_pushButton_open_2_clicked()
 	rectDst.bottom = rect.bottom();
 
 	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
-
-
 }
 
 void test::on_pushButton_close_2_clicked()
@@ -79,6 +112,18 @@ void test::resizeEvent(QResizeEvent *event)
 	rectDst.right = rect.right();
 	rectDst.bottom = rect.bottom();
 
+
+
+	long winId2 = ui.widget_2->winId();
+	QRect rect2 = ui.widget_2->rect();
+
+	RECT rectDst2;
+	rectDst2.left = rect2.left();
+	rectDst2.top = rect2.top();
+	rectDst2.right = rect2.right();
+	rectDst2.bottom = rect2.bottom();
+
 	ClibOEF::instance()->resize(winId, rectDst);
+	ClibOEF::instance()->resize(winId2, rectDst2);
 }
 

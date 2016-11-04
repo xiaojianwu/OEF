@@ -18,6 +18,15 @@ private Q_SLOTS:
 void on_pushButton_open_clicked();
 void on_pushButton_close_clicked();
 
+void on_pushButton_play_clicked();
+
+void on_pushButton_next_clicked();
+
+void on_pushButton_prev_clicked();
+
+void on_pushButton_jump_clicked();
+
+
 void on_pushButton_open_2_clicked();
 void on_pushButton_close_2_clicked();
 

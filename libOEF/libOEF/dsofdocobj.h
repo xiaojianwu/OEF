@@ -91,7 +91,7 @@ public:
     ~CDsoDocObject();
 
  // Static Create Method (Host Provides Site Interface)
-	static STDMETHODIMP_(CDsoDocObject*) CreateInstance(IDsoDocObjectSite* phost);
+	static CDsoDocObject* CreateInstance(IDsoDocObjectSite* phost);
 
  // IUnknown Implementation
     STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
@@ -177,7 +177,7 @@ public:
     STDMETHODIMP  IPDeactivateView();
     STDMETHODIMP  UIActivateView();
     STDMETHODIMP  UIDeactivateView();
-	STDMETHODIMP_(BOOL) IsDirty();
+	BOOL IsDirty();
     STDMETHODIMP  Save();
     STDMETHODIMP  SaveToFile(LPWSTR pwszFile, BOOL fOverwriteFile);
     STDMETHODIMP  PrintDocument(LPCWSTR pwszPrinter, LPCWSTR pwszOutput, UINT cCopies, UINT nFrom, UINT nTo, BOOL fPromptUser);
@@ -187,18 +187,23 @@ public:
     STDMETHODIMP  Close();
 
  // Control should notify us on these conditions (so we can pass to IP object)...
-    STDMETHODIMP_(void) OnNotifySizeChange(LPRECT prc);
-    STDMETHODIMP_(void) OnNotifyAppActivate(BOOL fActive, DWORD dwThreadID);
-    STDMETHODIMP_(void) OnNotifyPaletteChanged(HWND hwndPalChg);
-    STDMETHODIMP_(void) OnNotifyChangeToolState(BOOL fShowTools);
-    STDMETHODIMP_(void) OnNotifyControlFocus(BOOL fGotFocus);
+    void OnNotifySizeChange(LPRECT prc);
+    void OnNotifyAppActivate(BOOL fActive, DWORD dwThreadID);
+    void OnNotifyPaletteChanged(HWND hwndPalChg);
+    void OnNotifyChangeToolState(BOOL fShowTools);
+    void OnNotifyControlFocus(BOOL fGotFocus);
 
-    STDMETHODIMP_(BOOL) GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt);
+    BOOL GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt);
 
  // Inline accessors for control to get IP object info...
     inline IOleInPlaceActiveObject*  GetActiveObject(){return m_pipactive;}
     inline IOleObject*               GetOleObject(){return m_pole;}
 	inline HWND         GetDocWindow(){return m_hwnd;}
+
+	void         ReObtainActiveWindow();
+
+	void jumpTo(int pageNo);
+
     inline HWND         GetActiveWindow(){return m_hwndUIActiveObj;}
     inline BOOL         IsReadOnly(){return m_fOpenReadOnly;}
     inline BOOL         InPrintPreview(){return ((m_pprtprv != NULL) || (m_fInPptSlideShow));}
@@ -242,17 +247,17 @@ protected:
     STDMETHODIMP             SaveDocToMoniker(IMoniker *pmk, IBindCtx *pbc, BOOL fKeepLock);
     STDMETHODIMP             SaveDocToFile(LPWSTR pwszFullName, BOOL fKeepLock);
     STDMETHODIMP             ValidateDocObjectServer(REFCLSID rclsid);
-    STDMETHODIMP_(BOOL)      ValidateFileExtension(WCHAR* pwszFile, WCHAR** ppwszOut);
+    BOOL      ValidateFileExtension(WCHAR* pwszFile, WCHAR** ppwszOut);
 
-    STDMETHODIMP_(void)      OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
+    void      OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
 
     STDMETHODIMP             EnsureOleServerRunning(BOOL fLockRunning);
-    STDMETHODIMP_(void)      FreeRunningLock();
-    STDMETHODIMP_(void)      ClearMergedMenu();
-    STDMETHODIMP_(DWORD)     CalcDocNameIndex(LPCWSTR pwszPath);
-    STDMETHODIMP_(void)      CheckForPPTPreviewChange();
+    void      FreeRunningLock();
+    void      ClearMergedMenu();
+    DWORD     CalcDocNameIndex(LPCWSTR pwszPath);
+    void      CheckForPPTPreviewChange();
 
-    static STDMETHODIMP_(LRESULT)  FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    static LRESULT  FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
  // The private class variables...
 private:
