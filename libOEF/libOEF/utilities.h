@@ -57,7 +57,6 @@ STDAPI_(BOOL) IsWindowChild(HWND hwndParent, HWND hwndChild);
 //
 //STDAPI DsoGetTypeInfoEx(REFGUID rlibid, LCID lcid, WORD wVerMaj, WORD wVerMin, HMODULE hResource, REFGUID rguid, ITypeInfo** ppti);
 STDAPI DsoDispatchInvoke(LPDISPATCH pdisp, LPOLESTR pwszname, DISPID dspid, WORD wflags, DWORD cargs, VARIANT* rgargs, VARIANT* pvtret);
-HRESULT OLEMethod(int nType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, int cArgs...);
 
 STDAPI DsoReportError(HRESULT hr, LPWSTR pwszCustomMessage, EXCEPINFO* peiDispEx);
 

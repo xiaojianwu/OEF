@@ -157,17 +157,17 @@ void ClibOEF::close(long hwndContainer)
 	}
 }
 
-void ClibOEF::active(long hwndContainer)
-{
-	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
-	{
-		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
-		if (info.dso)
-		{
-			info.dso->Activate();
-		}
-	}
-}
+//void ClibOEF::active(long hwndContainer)
+//{
+//	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
+//	{
+//		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+//		if (info.dso)
+//		{
+//			info.dso->Activate();
+//		}
+//	}
+//}
 
 void ClibOEF::resize(long hwndContainer, RECT rect)
 {

@@ -83,10 +83,10 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 
 
 	// Make sure we are the active component for this process...
-	if (FAILED(hr = Activate()))
-	{
-		return hr;
-	}
+	//if (FAILED(hr = Activate()))
+	//{
+	//	return hr;
+	//}
 
 	// Let's make a doc frame for ourselves...
 	if (!(m_pDocObjFrame = CDsoDocObject::CreateInstance((IDsoDocObjectSite*)&m_xDsoDocObjectSite)))
@@ -147,7 +147,7 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 		else
 		{
 			// Ensure we are active control...
-			Activate();
+			//Activate();
 		}
 
 	//m_fInDocumentLoad = FALSE;
@@ -203,34 +203,34 @@ HRESULT CDsoFramerControl::Close()
 //
 //  Activate the current embedded document (i.e, forward focus).
 //
-HRESULT CDsoFramerControl::Activate()
-{
-	HRESULT hr;
-
-	return S_OK;
-
-	ODS("CDsoFramerControl::Activate\n");
-
-	if (m_fInControlActivate)
-		return S_FALSE;
-
-	// Don't allow recursion of this function or we could get stuck in
-	// loop trying to constantly grab focus.
-	m_fInControlActivate = TRUE;
-
-	// All we need to do is grab focus. This will tell the host to
-	// UI activate our OCX, set focus to our window, and set this control
-	// as the active component with the hook manager. 
-	hr = UIActivate(TRUE);
-
-	// Invalidate windows to update painting...
-	if (SUCCEEDED(hr))
-		InvalidateAllChildWindows(m_hwnd);
-
-	m_fInControlActivate = FALSE;
-
-	return hr;
-}
+//HRESULT CDsoFramerControl::Activate()
+//{
+//	HRESULT hr;
+//
+//	return S_OK;
+//
+//	ODS("CDsoFramerControl::Activate\n");
+//
+//	if (m_fInControlActivate)
+//		return S_FALSE;
+//
+//	// Don't allow recursion of this function or we could get stuck in
+//	// loop trying to constantly grab focus.
+//	m_fInControlActivate = TRUE;
+//
+//	// All we need to do is grab focus. This will tell the host to
+//	// UI activate our OCX, set focus to our window, and set this control
+//	// as the active component with the hook manager. 
+//	hr = UIActivate(TRUE);
+//
+//	// Invalidate windows to update painting...
+//	if (SUCCEEDED(hr))
+//		InvalidateAllChildWindows(m_hwnd);
+//
+//	m_fInControlActivate = FALSE;
+//
+//	return hr;
+//}
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -238,47 +238,47 @@ HRESULT CDsoFramerControl::Activate()
 //
 //  Make sure our control is UI Active and set as ActiveObject for host.
 //
-HRESULT CDsoFramerControl::UIActivate(BOOL fForceUIActive)
-{
-	HRESULT hr = S_FALSE;
-	TRACE1("CDsoFramerControl::UIActivate(fForceUIActive=%d)\n", fForceUIActive);
-
-	// We can't do anything if we aren't inplace active and visible!
-	//if (!(m_fInPlaceActive) || !(m_fInPlaceVisible))
-	//	return E_UNEXPECTED;
-
-	// If we are not already UI active or are being asked to force it, do the call
-	if ((!(m_fUIActive) || (fForceUIActive)) /*&& (m_pInPlaceSite)*/)
-	{
-		m_fUIActive = TRUE;
-
-		// inform the container of our intent
-		//hr = m_pInPlaceSite->OnUIActivate();
-
-		if (SUCCEEDED(hr) || (fForceUIActive))
-		{
-			// take the focus  [which is what UI Activation is all about !]
-			SetFocus(m_hwnd);
-
-			// we have to explicitly say we don't wany any border space.
-			//if (m_pInPlaceFrame)
-			//	m_pInPlaceFrame->SetBorderSpace(NULL);
-
-			//if (m_pInPlaceUIWindow)
-			//	m_pInPlaceUIWindow->SetBorderSpace(NULL);
-
-			// Ensure docobj component state is active as well...
-			if (!m_fComponentActive)
-			{
-				// Tell manager we are the active component now...
-				if (m_pHookManager) m_pHookManager->SetActiveComponent(m_hwnd);
-				//else OnComponentActivationChange(TRUE);
-			}
-		}
-	}
-
-	return hr;
-}
+//HRESULT CDsoFramerControl::UIActivate(BOOL fForceUIActive)
+//{
+//	HRESULT hr = S_FALSE;
+//	TRACE1("CDsoFramerControl::UIActivate(fForceUIActive=%d)\n", fForceUIActive);
+//
+//	// We can't do anything if we aren't inplace active and visible!
+//	//if (!(m_fInPlaceActive) || !(m_fInPlaceVisible))
+//	//	return E_UNEXPECTED;
+//
+//	// If we are not already UI active or are being asked to force it, do the call
+//	if ((!(m_fUIActive) || (fForceUIActive)) /*&& (m_pInPlaceSite)*/)
+//	{
+//		m_fUIActive = TRUE;
+//
+//		// inform the container of our intent
+//		//hr = m_pInPlaceSite->OnUIActivate();
+//
+//		if (SUCCEEDED(hr) || (fForceUIActive))
+//		{
+//			// take the focus  [which is what UI Activation is all about !]
+//			SetFocus(m_hwnd);
+//
+//			// we have to explicitly say we don't wany any border space.
+//			//if (m_pInPlaceFrame)
+//			//	m_pInPlaceFrame->SetBorderSpace(NULL);
+//
+//			//if (m_pInPlaceUIWindow)
+//			//	m_pInPlaceUIWindow->SetBorderSpace(NULL);
+//
+//			// Ensure docobj component state is active as well...
+//			if (!m_fComponentActive)
+//			{
+//				// Tell manager we are the active component now...
+//				if (m_pHookManager) m_pHookManager->SetActiveComponent(m_hwnd);
+//				//else OnComponentActivationChange(TRUE);
+//			}
+//		}
+//	}
+//
+//	return hr;
+//}
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -286,20 +286,20 @@ HRESULT CDsoFramerControl::UIActivate(BOOL fForceUIActive)
 //
 //  Invalidate all child windows attached to the window passed.
 //
-BOOL CDsoFramerControl::InvalidateAllChildWindows(HWND hwnd)
-{
-	ODS("CDsoFramerControl::InvalidateAllChildWindows()\n");
-	//typedef BOOL(CALLBACK* WNDENUMPROC)(HWND, LPARAM);
-	return EnumChildWindows(hwnd, (WNDENUMPROC)InvalidateAllChildWindowsCallback, 0);
-}
-
-BOOL CDsoFramerControl::InvalidateAllChildWindowsCallback(HWND hwnd, LPARAM)
-{
-	RECT rc;
-	GetClientRect(hwnd, &rc);
-	InvalidateRect(hwnd, &rc, TRUE);
-	return TRUE;
-}
+//BOOL CDsoFramerControl::InvalidateAllChildWindows(HWND hwnd)
+//{
+//	ODS("CDsoFramerControl::InvalidateAllChildWindows()\n");
+//	//typedef BOOL(CALLBACK* WNDENUMPROC)(HWND, LPARAM);
+//	return EnumChildWindows(hwnd, (WNDENUMPROC)InvalidateAllChildWindowsCallback, 0);
+//}
+//
+//BOOL CDsoFramerControl::InvalidateAllChildWindowsCallback(HWND hwnd, LPARAM)
+//{
+//	RECT rc;
+//	GetClientRect(hwnd, &rc);
+//	InvalidateRect(hwnd, &rc, TRUE);
+//	return TRUE;
+//}
 
 
 HWND CDsoFramerControl::getActiveHWND()
@@ -443,7 +443,7 @@ STDMETHODIMP CDsoFramerControl::XDsoDocObjectSite::SetStatusText(LPCOLESTR pszTe
 	{
 		ODS(" -- ForceUIActiveFromSetStatusText --\n");
 		pThis->m_fActivateOnStatus = FALSE;
-		pThis->Activate();
+		//pThis->Activate();
 	}
 
 	return S_OK;

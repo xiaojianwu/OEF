@@ -36,10 +36,10 @@
     <ClInclude Include="ipprevw.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="rbbinder.h">
+    <ClInclude Include="utilities.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="utilities.h">
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,5 +65,10 @@
     <ClCompile Include="utilities.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="libOEF.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -11,7 +11,6 @@
 //
 #include <docobj.h>    // Standard DocObjects (common to all AxDocs)
 #include "ipprevw.h"   // PrintPreview (for select Office apps)
-#include "rbbinder.h"  // Internet Publishing (for Web Folder write access) 
 
 ////////////////////////////////////////////////////////////////////////
 // Microsoft Office 97-2003 Document Object GUIDs

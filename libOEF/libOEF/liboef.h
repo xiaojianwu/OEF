@@ -43,7 +43,7 @@ public:
 
 	void close(long hwndContainer);
 
-	void active(long hwndContainer);
+	//void active(long hwndContainer);
 
 	void resize(long hwndContainer, RECT rect);
 
