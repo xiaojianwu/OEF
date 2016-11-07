@@ -6,6 +6,8 @@
 
 #include <QInputDialog>
 
+#include <QAxObject>
+
 #pragma comment(lib, "libOEF.lib")
 
 test::test(QWidget *parent)
@@ -32,7 +34,7 @@ void test::on_pushButton_open_clicked()
 	rectDst.top = rect.top();
 	rectDst.right = rect.right();
 	rectDst.bottom = rect.bottom();
-
+	//L"PowerPoint.Show" // MSPowerPoint // L"PowerPoint.ShowMacroEnabled"
 	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
 }
 
@@ -67,10 +69,25 @@ void test::on_pushButton_prev_clicked()
 
 void test::on_pushButton_jump_clicked()
 {
-	int pageNo = QInputDialog::getInt(this, tr("Jump to"), tr("page:"), 1, 99);
+	int pageNo = QInputDialog::getInt(this, tr("Jump to"), tr("page:"), 2, 1, 99);
 	long winId = ui.widget->winId();
 
-	ClibOEF::instance()->jump(winId, pageNo);
+	//ClibOEF::instance()->jump(winId, pageNo);
+
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
+
+	QAxObject activeDocument(iface);
+
+	QAxObject *slideWindow = activeDocument.querySubObject("SlideShowWindow");
+	if (slideWindow)
+	{
+		QAxObject *view = slideWindow->querySubObject("View");
+		if (view)
+		{
+			view->querySubObject("GotoSlide(int)", pageNo);
+		}
+	}
 }
 
 

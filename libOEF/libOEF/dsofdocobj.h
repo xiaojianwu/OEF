@@ -202,8 +202,6 @@ public:
 
 	void         ReObtainActiveWindow();
 
-	void jumpTo(int pageNo);
-
     inline HWND         GetActiveWindow(){return m_hwndUIActiveObj;}
     inline BOOL         IsReadOnly(){return m_fOpenReadOnly;}
     inline BOOL         InPrintPreview(){return ((m_pprtprv != NULL) || (m_fInPptSlideShow));}
@@ -280,6 +278,7 @@ private:
     IStorage            *m_pstgfile;            // In-memory file storage
     IStream             *m_pstmview;            // In-memory view info stream
 
+	IDispatch			*m_pDocDisp;
     IOleObject              *m_pole;            // Embedded OLE Object (OLE)
     IOleInPlaceObject       *m_pipobj;          // The IP object methods (OLE)
     IOleInPlaceActiveObject *m_pipactive;       // The UI Active object methods (OLE)

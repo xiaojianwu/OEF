@@ -6,7 +6,6 @@
  ***************************************************************************/
 #include "dsoframer.h"
 
-
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject - The DocObject Site Class
 //
@@ -367,6 +366,7 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
 				}
 			}
 
+
          // If either solution worked, setup the rest of the bind info...
             if (SUCCEEDED(hr))
             {
@@ -388,6 +388,15 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
              // requires it to IP activate it instead of link & show external...
                 if (IsWordObject())
 			        m_pole->SetHostNames(m_pwszHostName, m_pwszHostName);
+
+
+				// Bind to this ROT entry. 
+				IDispatch *pDisp;
+				hr = pmkfile->BindToObject(pbctx, NULL, IID_IDispatch, (void **)&pDisp);
+				if (SUCCEEDED(hr)) {
+					// Remember IDispatch. 
+					m_pDocDisp = pDisp;
+				}
 
             }
             else pole->SetClientSite(NULL);
@@ -1964,7 +1973,11 @@ STDMETHODIMP CDsoDocObject::XOleInPlaceSite::OnUIActivate(void)
 	METHOD_PROLOGUE(CDsoDocObject, OleInPlaceSite);
     ODS("CDsoDocObject::XOleInPlaceSite::OnUIActivate\n");
     pThis->m_fObjectUIActive = TRUE;
-	pThis->m_pipobj->GetWindow(&(pThis->m_hwndIPObject));
+	if (pThis->m_pipobj)
+	{
+		pThis->m_pipobj->GetWindow(&(pThis->m_hwndIPObject));
+	}
+	
 	return S_OK;
 }
 
@@ -2235,17 +2248,6 @@ void CDsoDocObject::ReObtainActiveWindow()
 {
 	m_pipactive->GetWindow(&m_hwndUIActiveObj);
 }
-
-void CDsoDocObject::jumpTo(int pageNo)
-{
-	IDispatch* dispatch = NULL;
-	m_pole->QueryInterface(IID_IPersistStorage, (void**)&dispatch);
-
-	//dispatch->Invoke()
-
-	m_pipactive->GetWindow(&m_hwndUIActiveObj);
-}
-
 
 STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::InsertMenus(HMENU hMenu, LPOLEMENUGROUPWIDTHS pMGW)
 {

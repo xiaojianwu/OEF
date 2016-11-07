@@ -24,132 +24,27 @@ STDAPI_(void) DsoMemFree(LPVOID ptr)
         HeapFree(v_hPrivateHeap, 0, ptr);
 }
 
-//void * _cdecl operator new(size_t size){ return DsoMemAlloc(size);}
-//void  _cdecl operator delete(void *ptr){ DsoMemFree(ptr); }
-//int __cdecl _purecall(){__asm{int 3}; return 0;}
-
 ////////////////////////////////////////////////////////////////////////
 // Global String Functions
 //
-////////////////////////////////////////////////////////////////////////
-// DsoConvertToUnicodeEx
-//
-STDAPI DsoConvertToUnicodeEx(LPCSTR pszMbcsString, DWORD cbMbcsLen, LPWSTR pwszUnicode, DWORD cbUniLen, UINT uiCodePage)
+
+
+//////////////////////////////////////////////////////////////////////
+ //DsoConvertToBSTR
+
+ // Takes a MBCS string and returns a BSTR. NULL is returned if the 
+ // function fails or the string is empty.
+
+STDAPI_(BSTR) DsoConvertToBSTR(LPWSTR pwsz)
 {
-	DWORD cbRet;
-	UINT iCode = CP_ACP;
-
-	if (IsValidCodePage(uiCodePage))
-		iCode = uiCodePage;
-
-	CHECK_NULL_RETURN(pwszUnicode,    E_POINTER);
-	pwszUnicode[0] = L'\0';
-
-	CHECK_NULL_RETURN(pszMbcsString,  E_POINTER);
-	CHECK_NULL_RETURN(cbMbcsLen,      E_INVALIDARG);
-	CHECK_NULL_RETURN(cbUniLen,       E_INVALIDARG);
-
-	cbRet = MultiByteToWideChar(iCode, 0, pszMbcsString, cbMbcsLen, pwszUnicode, cbUniLen);
-	if (cbRet == 0)	return E_WIN32_LASTERROR;
-
-	pwszUnicode[cbRet] = L'\0';
-	return S_OK;
-}
-
-////////////////////////////////////////////////////////////////////////
-// DsoConvertToMBCSEx
-//
-STDAPI DsoConvertToMBCSEx(LPCWSTR pwszUnicodeString, DWORD cbUniLen, LPSTR pszMbcsString, DWORD cbMbcsLen, UINT uiCodePage)
-{
-	DWORD cbRet;
-	UINT iCode = CP_ACP;
-
-	if (IsValidCodePage(uiCodePage))
-		iCode = uiCodePage;
-
-	CHECK_NULL_RETURN(pszMbcsString,     E_POINTER);
-	pszMbcsString[0] = L'\0';
-
-	CHECK_NULL_RETURN(pwszUnicodeString, E_POINTER);
-	CHECK_NULL_RETURN(cbMbcsLen,         E_INVALIDARG);
-	CHECK_NULL_RETURN(cbUniLen,          E_INVALIDARG);
-
-	cbRet = WideCharToMultiByte(iCode, 0, pwszUnicodeString, -1, pszMbcsString, cbMbcsLen, NULL, NULL);
-	if (cbRet == 0)	return E_WIN32_LASTERROR;
-
-	pszMbcsString[cbRet] = '\0';
-	return S_OK;
-}
-
-////////////////////////////////////////////////////////////////////////
-// DsoConvertToLPWSTR
-//
-//  Takes a MBCS string and returns a LPWSTR allocated on private heap.
-//
-//STDAPI_(LPWSTR) DsoConvertToLPWSTR(LPCSTR pszMbcsString)
-//{
-//	LPWSTR pwsz = NULL;
-//	UINT cblen, cbnew;
-//
-//	if ((pszMbcsString) && 
-//        ((cblen = lstrlen(pszMbcsString)) > 0))
-//	{
-//		cbnew = ((cblen + 1) * sizeof(WCHAR));
-//		if ((pwsz = (LPWSTR)DsoMemAlloc(cbnew)) != NULL) 
-//		{
-//			if (FAILED(DsoConvertToUnicodeEx(pszMbcsString, cblen, pwsz, cbnew, GetACP())))
-//            {
-//			    DsoMemFree(pwsz);
-//                pwsz = NULL;
-//            }
-//		}
-//	}
-//
-//	return pwsz;
-//}
-////////////////////////////////////////////////////////////////////////
-// DsoConvertToMBCS
-//
-//  Takes a WCHAR string and returns a LPSTR on the private heap.
-//
-STDAPI_(LPSTR) DsoConvertToMBCS(LPCWSTR pwszUnicodeString)
-{
-	LPSTR psz = NULL;
-	UINT cblen, cbnew;
-
-    if ((pwszUnicodeString) && 
-        ((cblen = lstrlenW(pwszUnicodeString)) > 0))
+	BSTR bstr = NULL;
+	if (pwsz)
 	{
-		cbnew = ((cblen + 1) * sizeof(WCHAR));
-		if ((psz = (LPSTR)DsoMemAlloc(cbnew)) != NULL) 
-		{
-			if (FAILED(DsoConvertToMBCSEx(pwszUnicodeString, cblen, psz, cbnew, GetACP())))
-            {
-			    DsoMemFree(psz); psz = NULL;
-            }
-		}
-	}
-
-	return psz;
+	    bstr = SysAllocString(pwsz);
+	    DsoMemFree(pwsz);
+    }
+	return bstr;
 }
-
-////////////////////////////////////////////////////////////////////////
-// DsoConvertToBSTR
-//
-//  Takes a MBCS string and returns a BSTR. NULL is returned if the 
-//  function fails or the string is empty.
-//
-//STDAPI_(BSTR) DsoConvertToBSTR(LPCSTR pszMbcsString)
-//{
-//	BSTR bstr = NULL;
-//    LPWSTR pwsz = DsoConvertToLPWSTR(pszMbcsString);
-//	if (pwsz)
-//	{
-//	    bstr = SysAllocString(pwsz);
-//	    DsoMemFree(pwsz);
-//    }
-//	return bstr;
-//}
 
 ////////////////////////////////////////////////////////////////////////
 // DsoConvertToLPOLESTR
@@ -345,116 +240,6 @@ STDAPI_(UINT) DsoCompareStringsEx(LPCWSTR pwsz1, INT cch1, LPCWSTR pwsz2, INT cc
 
 
 ////////////////////////////////////////////////////////////////////////
-// URL Helpers
-//
-////////////////////////////////////////////////////////////////////////
-// General Functions (checks to see if we can recognize type)
-//
-//STDAPI_(BOOL) LooksLikeUNC(LPCWSTR pwsz)
-//{
-//	return ((pwsz) && (*pwsz == L'\\') && (*(pwsz + 1) == L'\\') && (*(pwsz + 2) != L'\\'));
-//}
-
-//STDAPI_(BOOL) LooksLikeLocalFile(LPCWSTR pwsz)
-//{
-//	return ((pwsz) && 
-//        (((*pwsz > 64) && (*pwsz < 91)) || ((*pwsz > 96) && (*pwsz < 123))) &&
-//        (*(pwsz + 1) == L':') && (*(pwsz + 2) == L'\\'));
-//}
-
-//STDAPI_(BOOL) LooksLikeHTTP(LPCWSTR pwsz)
-//{
-//	return ((pwsz) && ((*pwsz == L'H') || (*pwsz == L'h')) &&
-//		((*(pwsz + 1) == L'T') || (*(pwsz + 1) == L't')) &&
-//		((*(pwsz + 2) == L'T') || (*(pwsz + 2) == L't')) &&
-//		((*(pwsz + 3) == L'P') || (*(pwsz + 3) == L'p')) &&
-//		((*(pwsz + 4) == L':') || (((*(pwsz + 4) == L'S') || (*(pwsz + 4) == L's')) && (*(pwsz + 5) == L':'))));
-//}
-
-////////////////////////////////////////////////////////////////////////
-// GetTempPathForURLDownload
-//
-//  Constructs a temp path for a downloaded file. Note we scan the URL 
-//  to find the name of the file so we can use its exention for server 
-//  association (in case it is a non-docfile -- like RTF) and also 
-//  create our own subfolder to try and avoid name conflicts in temp
-//  folder itself. 
-//
-//STDAPI_(BOOL) GetTempPathForURLDownload(WCHAR* pwszURL, WCHAR** ppwszLocalFile)
-//{
-//	DWORD  dw;
-//	LPWSTR pwszTFile = NULL;
-//	WCHAR   pwszTPath[MAX_PATH];
-//
-// // Do a little parameter checking and find length of the URL...
-//	if (!(pwszURL) || ((dw = lstrlenW(pwszURL)) < 6) ||
-//		!(LooksLikeHTTP(pwszURL)) || !(ppwszLocalFile))
-//		return FALSE;
-//
-//	*ppwszLocalFile = NULL;
-//
-//	if (GetTempPath(MAX_PATH, pwszTPath))
-//	{
-//		DWORD dwtlen = lstrlen(pwszTPath);
-//		if (dwtlen > 0 && pwszTPath[dwtlen-1] != '\\')
-//			lstrcat(pwszTPath, L"\\");
-//
-//		lstrcat(pwszTPath, L"DsoFramer");
-//
-//		if (CreateDirectory(pwszTPath, NULL) || GetLastError() == ERROR_ALREADY_EXISTS)
-//		{
-//			lstrcat(pwszTPath, L"\\");
-//		}
-//	}
-//
-//	if (pwszTPath)
-//	{
-//		if (pwszTFile = DsoCopyString(pwszURL))
-//		{
-//			LPWSTR pwszT = pwszTFile;
-//			while (*(++pwszT))
-//				if (*pwszT == L'?'){*pwszT = L'\0'; break;}
-//
-//			while (*(--pwszT))
-//				if (*pwszT == L'/'){++pwszT; break;}
-//
-//			*ppwszLocalFile = DsoCopyStringCat(pwszTPath, pwszT);
-//
-//			DsoMemFree(pwszTFile);
-//		}
-//
-//		DsoMemFree(pwszTPath);
-//	}
-//
-//	return (BOOL)(*ppwszLocalFile);
-//}
-
-////////////////////////////////////////////////////////////////////////
-// URLDownloadFile
-//
-//  Does a simple URLMON download of file (no save back to server allowed),
-//  and no dependent files will be downloaded (just one temp file). 
-//
-//STDAPI URLDownloadFile(LPUNKNOWN punk, WCHAR* pwszURL, WCHAR* pwszLocalFile)
-//{
-//    typedef HRESULT (WINAPI *PFN_URLDTFW)(LPUNKNOWN, LPCWSTR, LPCWSTR, DWORD, LPUNKNOWN);
-//    static PFN_URLDTFW pfnURLDownloadToFileW = NULL;
-//    HMODULE hUrlmon;
-//
-//    if (pfnURLDownloadToFileW == NULL)
-//    {
-//        if (hUrlmon = LoadLibrary(L"URLMON.DLL"))
-//            pfnURLDownloadToFileW = (PFN_URLDTFW)GetProcAddress(hUrlmon, "URLDownloadToFileW");
-//    }
-//
-//    if (pfnURLDownloadToFileW == NULL)
-//        return E_UNEXPECTED;
-//
-//    return pfnURLDownloadToFileW(punk, pwszURL, pwszLocalFile, 0, NULL);
-//}
-
-
-////////////////////////////////////////////////////////////////////////
 // OLE Conversion Functions
 //
 #define HIMETRIC_PER_INCH   2540      // number HIMETRIC units per inch
@@ -542,51 +327,6 @@ STDAPI_(BOOL) IsWindowChild(HWND hwndParent, HWND hwndChild)
 }
 
 ////////////////////////////////////////////////////////////////////////
-// DsoGetTypeInfoEx
-//
-//  Gets an ITypeInfo from the LIBID specified. Optionally can load and
-//  register the typelib from a module resource (if specified). Used to
-//  load our typelib on demand.
-//
-//STDAPI DsoGetTypeInfoEx(REFGUID rlibid, LCID lcid, WORD wVerMaj, WORD wVerMin, HMODULE hResource, REFGUID rguid, ITypeInfo** ppti)
-//{
-//	HRESULT     hr;
-//	ITypeLib*   ptlib;
-//
-//	CHECK_NULL_RETURN(ppti, E_POINTER);
-//    *ppti = NULL;
-//
-// // Try to pull information from the registry...
-//    hr = LoadRegTypeLib(rlibid, wVerMaj, wVerMin, lcid, &ptlib);
-//
-// // If that failed, and we have a resource module to load from,
-// // try loading it from the module...
-//    if (FAILED(hr) && (hResource))
-//    {
-//		LPWSTR pwszPath;
-//        if (FGetModuleFileName(hResource, &pwszPath))
-//        {
-//         // Now, load the type library from module resource file...
-//			hr = LoadTypeLib(pwszPath, &ptlib);
-//
-//		 // Register library to make things easier next time...
-//			if (SUCCEEDED(hr))
-//                RegisterTypeLib(ptlib, pwszPath, NULL);
-//
-//			DsoMemFree(pwszPath);
-//		}
-//    }
-//
-// // We have the typelib. Now get the requested typeinfo...
-//	if (SUCCEEDED(hr))
-//        hr = ptlib->GetTypeInfoOfGuid(rguid, ppti);
-//
-// // Release the type library interface.
-//    SAFE_RELEASE_INTERFACE(ptlib);
-//	return hr;
-//}
-
-////////////////////////////////////////////////////////////////////////
 // DsoDispatchInvoke
 //
 //  Wrapper for IDispatch::Invoke calls to event sinks, or late bound call
@@ -620,6 +360,58 @@ STDAPI DsoDispatchInvoke(LPDISPATCH pdisp, LPOLESTR pwszname, DISPID dspid, WORD
     SEH_EXCEPT(hr)
 
     return hr;
+}
+
+
+
+HRESULT OLEMethod(int nType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, int cArgs...)
+{
+	if (!pDisp) return E_FAIL;
+
+	va_list marker;
+	va_start(marker, cArgs);
+
+	DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	DISPID dispidNamed = DISPID_PROPERTYPUT;
+	DISPID dispID;
+	char szName[200];
+
+
+	// Convert down to ANSI
+	WideCharToMultiByte(CP_ACP, 0, ptName, -1, szName, 256, NULL, NULL);
+
+	// Get DISPID for name passed...
+	HRESULT hr = pDisp->GetIDsOfNames(IID_NULL, &ptName, 1, LOCALE_USER_DEFAULT, &dispID);
+	if (FAILED(hr)) {
+		return hr;
+	}
+	// Allocate memory for arguments...
+	VARIANT *pArgs = new VARIANT[cArgs + 1];
+	// Extract arguments...
+	for (int i = 0; i < cArgs; i++) {
+		pArgs[i] = va_arg(marker, VARIANT);
+	}
+
+	// Build DISPPARAMS
+	dp.cArgs = cArgs;
+	dp.rgvarg = pArgs;
+
+	// Handle special-case for property-puts!
+	if (nType & DISPATCH_PROPERTYPUT) {
+		dp.cNamedArgs = 1;
+		dp.rgdispidNamedArgs = &dispidNamed;
+	}
+
+	// Make the call!
+	hr = pDisp->Invoke(dispID, IID_NULL, LOCALE_SYSTEM_DEFAULT, nType, &dp, pvResult, NULL, NULL);
+	if (FAILED(hr)) {
+		return hr;
+	}
+	// End variable-argument section...
+	va_end(marker);
+
+	delete[] pArgs;
+	return hr;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -809,101 +601,6 @@ STDAPI_(BOOL) FPerformShellOp(DWORD dwOp, WCHAR* wzFrom, WCHAR* wzTo)
 	return f;
 }
 
-////////////////////////////////////////////////////////////////////////
-// FGetModuleFileName
-//
-//  Handles Unicode/ANSI paths from a module handle.
-//
-//STDAPI_(BOOL) FGetModuleFileName(HMODULE hModule, WCHAR** wzFileName)
-//{
-//    LPWSTR pwsz;
-//    DWORD dw;
-//
-//    CHECK_NULL_RETURN(wzFileName, FALSE);
-//    *wzFileName = NULL;
-//
-//    pwsz = (LPWSTR)DsoMemAlloc((MAX_PATH * sizeof(WCHAR)));
-//    CHECK_NULL_RETURN(pwsz, FALSE);
-//
-//    if (v_fUnicodeAPI)
-//    {
-//        dw = GetModuleFileNameW(hModule, pwsz, MAX_PATH);
-//        if (dw == 0)
-//        {
-//            DsoMemFree(pwsz);
-//            return FALSE;
-//        }
-//    }
-//    else
-//    {
-//        dw = GetModuleFileNameA(hModule, (LPSTR)pwsz, MAX_PATH);
-//        if (dw == 0)
-//        {
-//            DsoMemFree(pwsz);
-//            return FALSE;
-//        }
-//
-//        LPWSTR pwsz2 = DsoConvertToLPWSTR((LPSTR)pwsz);
-//        if (pwsz2 == NULL)
-//        {
-//            DsoMemFree(pwsz);
-//            return FALSE;
-//        }
-//
-//        DsoMemFree(pwsz);
-//        pwsz = pwsz2;
-//    }
-//
-//    *wzFileName = pwsz;
-//    return TRUE;
-//}
-
-
-////////////////////////////////////////////////////////////////////////
-// FIsIECacheFile
-//
-//  Determines if file came from IE Cache (treat as read-only).
-//
-//STDAPI_(BOOL) FIsIECacheFile(LPWSTR pwszFile)
-//{
-//    BOOL fIsCacheFile = FALSE;
-//    LPWSTR pwszTmpCache = NULL;
-//    BYTE rgbuffer[MAX_PATH * sizeof(WCHAR)];
-//    HKEY hk;
-//
-//    if (RegOpenKey(HKEY_CURRENT_USER, 
-//        L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", &hk) == ERROR_SUCCESS)
-//    {
-//        DWORD dwT, dwS; dwT = MAX_PATH; 
-//        memset(rgbuffer, 0, (MAX_PATH * sizeof(WCHAR)));
-//
-//        if (v_fUnicodeAPI)
-//        {
-//            if ((RegQueryValueExA(hk, "Cache", 0, &dwT, rgbuffer, &dwS) == ERROR_SUCCESS) && 
-//                (dwT == REG_SZ) && (dwS > 1))
-//                pwszTmpCache = DsoConvertToLPWSTR((LPSTR)rgbuffer);
-//        }
-//        else
-//        {
-//            if ((RegQueryValueExW(hk, L"Cache", 0, &dwT, rgbuffer, &dwS) == ERROR_SUCCESS) && 
-//                (dwT == REG_SZ) && (dwS > 1))
-//                pwszTmpCache = DsoCopyString((LPWSTR)rgbuffer);
-//        }
-//
-//        RegCloseKey(hk);
-//
-//        if (pwszTmpCache)
-//        {
-//            dwS = lstrlenW(pwszTmpCache);
-//            dwT = lstrlenW(pwszFile);
-//            fIsCacheFile = ((dwS < dwT) && 
-//                (DsoCompareStringsEx(pwszTmpCache, dwS, pwszFile, dwS) == CSTR_EQUAL));
-//            DsoMemFree(pwszTmpCache);
-//        }
-//    }
-//
-//    return fIsCacheFile;
-//}
 
 ////////////////////////////////////////////////////////////////////////
 // FDrawText
@@ -943,394 +640,3 @@ STDAPI_(BOOL) FSetRegKeyValue(HKEY hk, WCHAR* pwsz)
 
 	return (lret == ERROR_SUCCESS);
 }
-
-////////////////////////////////////////////////////////////////////////
-// FOpenPrinter
-//
-//  Open the specified printer by name.
-//
-//STDAPI_(BOOL) FOpenPrinter(LPCWSTR pwszPrinter, LPHANDLE phandle)
-//{
-//	BOOL fRet = FALSE;
-//    DWORD dwLastError = 0;
-//    if (v_fUnicodeAPI)
-//    {
-//        PRINTER_DEFAULTSW prtdef; 
-//        memset(&prtdef, 0, sizeof(PRINTER_DEFAULTSW));
-//        prtdef.DesiredAccess = PRINTER_ACCESS_USE;
-//        fRet = OpenPrinterW((LPWSTR)pwszPrinter, phandle, &prtdef);
-//    }
-//    else
-//	{
-//		LPSTR psz = DsoConvertToMBCS(pwszPrinter);
-//        fRet = OpenPrinterA(psz, phandle, NULL);
-//        if (!fRet) dwLastError = GetLastError();
-//		DsoMemFree(psz);
-//	}
-//    if (dwLastError) SetLastError(dwLastError);
-//	return fRet;
-//}
-
-////////////////////////////////////////////////////////////////////////
-// FGetPrinterSettings
-//
-//  Returns the default device, port name, and DEVMODE structure for the
-//  printer passed. Handles Unicode translation of DEVMODE if on Win9x.
-//
-//STDAPI_(BOOL) FGetPrinterSettings(HANDLE hprinter, LPWSTR *ppwszProcessor, LPWSTR *ppwszDevice, LPWSTR *ppwszOutput, LPDEVMODEW *ppdvmode, DWORD *pcbSize)
-//{
-//	BOOL fRet = FALSE;
-//    DWORD dwLastError = 0;
-//    DWORD cbNeed, cbAlloc = 0;
-//
-//    if ((ppwszProcessor == NULL) || (ppwszDevice == NULL) || (ppwszOutput == NULL) ||
-//        (ppdvmode == NULL) || (pcbSize == NULL))
-//        return FALSE;
-//
-//    *ppwszProcessor = NULL; *ppwszDevice = NULL; *ppwszOutput = NULL;
-//    *ppdvmode = NULL; *pcbSize = 0;
-//
-//    if (v_fUnicodeAPI) // Use Unicode API if possible (much easier)...
-//    {
-//		GetPrinterW(hprinter, 2, NULL, 0, &cbAlloc);
-//        PRINTER_INFO_2W *pinfo = (PRINTER_INFO_2W*)DsoMemAlloc(++cbAlloc);
-//        if (pinfo)
-//        {
-//            fRet = GetPrinterW(hprinter, 2, (BYTE*)pinfo, cbAlloc, &cbNeed);
-//            if (fRet)
-//            {
-//                *ppwszProcessor = DsoConvertToLPWSTR("winspool");
-//                *ppwszDevice = DsoCopyString(pinfo->pDriverName);
-//                *ppwszOutput = DsoCopyString(pinfo->pPortName);
-//
-//                if (pinfo->pDevMode) // If we have the devmode, just need to copy it...
-//                {
-//                    DWORD cbData = (pinfo->pDevMode->dmSize) + (pinfo->pDevMode->dmDriverExtra);
-//                    *ppdvmode = (DEVMODEW*)DsoMemAlloc(cbData);
-//                    if (*ppdvmode)
-//                    {
-//                        memcpy(*ppdvmode, pinfo->pDevMode, cbData);
-//                        *pcbSize = cbData;
-//                    }
-//                }
-//            }
-//            else dwLastError = GetLastError();
-//
-//            DsoMemFree(pinfo);
-//        }
-//        else dwLastError = ERROR_NOT_ENOUGH_MEMORY;   
-//    }
-//    else
-//	{
-//		GetPrinterA(hprinter, 2, NULL, 0, &cbAlloc);
-//        PRINTER_INFO_2A *pinfo = (PRINTER_INFO_2A*)DsoMemAlloc(++cbAlloc);
-//        if (pinfo)
-//        {
-//            fRet = GetPrinterA(hprinter, 2, (BYTE*)pinfo, cbAlloc, &cbNeed);
-//            if (fRet)
-//            {
-//                *ppwszProcessor = DsoConvertToLPWSTR("winspool");
-//                *ppwszDevice = DsoConvertToLPWSTR(pinfo->pDriverName);
-//                *ppwszOutput = DsoConvertToLPWSTR(pinfo->pPortName);
-//
-//                if (pinfo->pDevMode) // For Win9x API, we have to convert the DEVMODEA
-//                {                    // into DEVMODEW so we have Unicode names for TARGETDEVICE...
-//                    DWORD cbData = sizeof(DEVMODEW) + 
-//                                ((pinfo->pDevMode->dmSize > sizeof(DEVMODEA)) ? (pinfo->pDevMode->dmSize - sizeof(DEVMODEA)) : 0) +
-//                                  pinfo->pDevMode->dmDriverExtra;
-//
-//                    *ppdvmode = (DEVMODEW*)DsoMemAlloc(cbData);
-//                    if (*ppdvmode)
-//                    {
-//                        DsoConvertToUnicodeEx(
-//                            (LPSTR)(pinfo->pDevMode->dmDeviceName), CCHDEVICENAME,
-//                            (LPWSTR)((*ppdvmode)->dmDeviceName), CCHDEVICENAME, 0);
-//
-//                        // The rest of the copy depends on the default size of the DEVMODE.
-//                        // Just check the size and convert the form name if it exists...
-//		                if (pinfo->pDevMode->dmSize <= FIELD_OFFSET(DEVMODEA, dmFormName))
-//                        {
-//                            memcpy(&((*ppdvmode)->dmSpecVersion), 
-//                                   &(pinfo->pDevMode->dmSpecVersion),
-//                                   pinfo->pDevMode->dmSize - CCHDEVICENAME);
-//		                }
-//		                else 
-//                        {
-//			                memcpy(&((*ppdvmode)->dmSpecVersion), 
-//                                   &(pinfo->pDevMode->dmSpecVersion),
-//				                   FIELD_OFFSET(DEVMODEA, dmFormName) -
-//					               FIELD_OFFSET(DEVMODEA, dmSpecVersion));
-//
-//                            DsoConvertToUnicodeEx(
-//                                (LPSTR)(pinfo->pDevMode->dmFormName), CCHFORMNAME,
-//                                (LPWSTR)((*ppdvmode)->dmFormName), CCHFORMNAME, 0);
-//
-//			                if (pinfo->pDevMode->dmSize > FIELD_OFFSET(DEVMODEA, dmLogPixels))
-//				                memcpy(&((*ppdvmode)->dmLogPixels),
-//                                       &(pinfo->pDevMode->dmLogPixels),
-//					                   pinfo->pDevMode->dmSize - FIELD_OFFSET(DEVMODEA, dmLogPixels));
-//		                }
-//            
-//                        (*ppdvmode)->dmSize = (WORD)((pinfo->pDevMode->dmSize > sizeof(DEVMODEA)) ?
-//                                                   (sizeof(DEVMODEW) + (pinfo->pDevMode->dmSize - sizeof(DEVMODEA))) :
-//                                                    sizeof(DEVMODEW));
-//
-//                        memcpy((((BYTE*)(*ppdvmode)) + ((*ppdvmode)->dmSize)),
-//                               (((BYTE*)(pinfo->pDevMode)) + (pinfo->pDevMode->dmSize)),
-//                               pinfo->pDevMode->dmDriverExtra);
-//
-//                        *pcbSize = cbData;
-//                    }
-//                }
-//            }
-//            else dwLastError = GetLastError();
-//
-//            DsoMemFree(pinfo);
-//        }
-//        else dwLastError = ERROR_NOT_ENOUGH_MEMORY;
-//	}
-//    if (dwLastError) SetLastError(dwLastError);
-//	return fRet;
-//}
-
-
-///////////////////////////////////////////////////////////////////////////////////
-// DsoGetFileFromUser
-//
-//  Displays the Open/Save dialog using Unicode version if available. Returns the
-//  path as a unicode BSTR regardless of OS.
-//
-//STDAPI DsoGetFileFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
-//       LPCWSTR pwzFilter, DWORD dwFiltIdx, LPCWSTR pwszDefExt, LPCWSTR pwszCurrentItem, BOOL fShowSave,
-//       BSTR *pbstrFile, BOOL *pfReadOnly)
-//{
-//	BYTE buffer[MAX_PATH * sizeof(WCHAR)];
-//	BOOL fSuccess;
-//	DWORD dw;
-//
-// // Make sure they pass a *bstr...
-//    CHECK_NULL_RETURN(pbstrFile,  E_POINTER);
-//    *pbstrFile = NULL;
-//
-//	buffer[0] = 0; buffer[1] = 0;
-//
-// // See if we have Unicode function to call. If so, we use OPENFILENAMEW and 
-// // get the file path in Unicode, returned as BSTR...
-//	 if (v_fUnicodeAPI)
-//	{
-//		OPENFILENAMEW ofnw;
-//		memset(&ofnw,  0,   sizeof(OPENFILENAMEW));
-//	    ofnw.lStructSize  = sizeof(OPENFILENAMEW);
-//	    ofnw.hwndOwner    = hwndOwner;
-//	    ofnw.lpstrFilter  = pwzFilter;
-//	    ofnw.nFilterIndex = dwFiltIdx;
-//        ofnw.lpstrDefExt  = pwszDefExt;
-//	    ofnw.lpstrTitle   = pwzTitle;
-//	    ofnw.lpstrFile    = (LPWSTR)&buffer[0];
-//	    ofnw.nMaxFile     = MAX_PATH;
-//	    ofnw.Flags        = dwFlags;
-//
-//		if (pwszCurrentItem)
-//		{
-//			dw = lstrlenW(pwszCurrentItem);
-//			if ((dw) && (dw < MAX_PATH))
-//			{
-//				memcpy(ofnw.lpstrFile, pwszCurrentItem,  dw * sizeof(WCHAR));
-//				ofnw.lpstrFile[dw] = L'\0';
-//			}
-//		}
-//
-//		if (fShowSave)
-//			fSuccess = GetSaveFileNameW(&ofnw);
-//		else
-//			fSuccess = GetOpenFileNameW(&ofnw);
-//
-//		if (fSuccess)
-//        {
-//			*pbstrFile = SysAllocString((LPWSTR)&buffer[0]);
-//            if (pfReadOnly) *pfReadOnly = (ofnw.Flags & OFN_READONLY);
-//        }
-//	}
-//	else
-//	{ // If not, then we use OPENFILENAMEA and thunk down our params to
-//	  // the MBCS of the system, and then thunk back the Unicode for the return...
-//		OPENFILENAMEA ofn;
-//		memset(&ofn,  0,   sizeof(OPENFILENAMEA));
-//	    ofn.lStructSize  = sizeof(OPENFILENAMEA);
-//	    ofn.hwndOwner    = hwndOwner;
-//	    ofn.lpstrFilter  = DsoConvertToMBCS(pwzFilter);
-//	    ofn.nFilterIndex = dwFiltIdx;
-//        ofn.lpstrDefExt  = DsoConvertToMBCS(pwszDefExt);
-//	    ofn.lpstrTitle   = DsoConvertToMBCS(pwzTitle);
-//	    ofn.lpstrFile    = (LPSTR)&buffer[0];
-//	    ofn.nMaxFile     = MAX_PATH;
-//	    ofn.Flags        = dwFlags;
-//
-//		if (pwszCurrentItem)
-//			DsoConvertToMBCSEx(pwszCurrentItem, lstrlenW(pwszCurrentItem), (LPSTR)&buffer[0], MAX_PATH, GetACP());
-//
-//		if (fShowSave)
-//			fSuccess = GetSaveFileNameA(&ofn);
-//		else
-//			fSuccess = GetOpenFileNameA(&ofn);
-//
-//
-//		if (fSuccess)
-//        {
-//			*pbstrFile = DsoConvertToBSTR((LPCSTR)&buffer[0]);
-//            if (pfReadOnly) *pfReadOnly = (ofn.Flags & OFN_READONLY);
-//        }
-//
-//        DsoMemFree((void*)(ofn.lpstrDefExt));
-//        DsoMemFree((void*)(ofn.lpstrFilter));
-//        DsoMemFree((void*)(ofn.lpstrTitle));
-//	}
-//
-// // If we got a string, then success. All other errors (even user cancel) should
-// // be treated as a general failure (feel free to change this for more full function).
-//    return ((*pbstrFile == NULL) ? E_FAIL : S_OK);
-//}
-
-///////////////////////////////////////////////////////////////////////////////////
-// DsoGetOleInsertObjectFromUser
-//
-//  Displays the OLE InsertObject dialog using Unicode version if available.
-//
-//STDAPI DsoGetOleInsertObjectFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
-//        BOOL fDocObjectOnly, BOOL fAllowControls, BSTR *pbstrResult, UINT *ptype)
-//{
-//	BYTE buffer[MAX_PATH * sizeof(WCHAR)];
-//    LPCLSID lpNewExcludeList = NULL;
-//	int nNewExcludeCount = 0;
-//	int nNewExcludeLen = 0;
-//
-// // Make sure they pass a *bstr...
-//    CHECK_NULL_RETURN(pbstrResult,  E_POINTER);
-//    *pbstrResult = NULL;
-//
-// // To limit list to just those marked as DocObject servers, you have to enum
-// // the registry and create an exclude list for OLE dialog. Exclude all except
-// // those that are marked DocObject under their ProgID.
-//    if (fDocObjectOnly)
-//    {
-//	    HKEY hkCLSID;
-//	    HKEY hkItem;
-//	    HKEY hkDocObject;
-//	    DWORD dwIndex = 0;
-//	    WCHAR pwszClsid[MAX_PATH+1];
-//
-//	    if (RegOpenKeyEx(HKEY_CLASSES_ROOT, L"CLSID", 0, KEY_READ|KEY_ENUMERATE_SUB_KEYS, &hkCLSID) == ERROR_SUCCESS)
-//	    {
-//		    while (RegEnumKey(hkCLSID, dwIndex++, pwszClsid, MAX_PATH) == ERROR_SUCCESS)
-//		    {
-//			    if (RegOpenKeyEx(hkCLSID, pwszClsid, 0, KEY_READ, &hkItem) == ERROR_SUCCESS)
-//			    {
-//					if ((RegOpenKeyEx(hkItem, L"DocObject", 0, KEY_READ, &hkDocObject) != ERROR_SUCCESS))
-//					{
-//						CLSID clsid;
-//						//LPWSTR pwszClsid = DsoConvertToLPWSTR(szName);
-//						if ((pwszClsid) && SUCCEEDED(CLSIDFromString(pwszClsid, &clsid)))
-//						{
-//							if (lpNewExcludeList == NULL)
-//							{
-//								nNewExcludeCount = 0;
-//								nNewExcludeLen = 16;
-//								lpNewExcludeList = new CLSID[nNewExcludeLen];
-//							}
-//							if (nNewExcludeCount == nNewExcludeLen)
-//							{
-//								LPCLSID lpOldList = lpNewExcludeList;
-//								nNewExcludeLen <<= 2;
-//								lpNewExcludeList = new CLSID[nNewExcludeLen];
-//								memcpy(lpNewExcludeList, lpOldList, sizeof(CLSID) * nNewExcludeCount);
-//								delete [] lpOldList;
-//							}
-//
-//							lpNewExcludeList[nNewExcludeCount] = clsid;
-//							nNewExcludeCount++;
-//						}
-//						//SAFE_FREESTRING(pwszClsid);
-//                        RegCloseKey(hkDocObject);
-//					}
-//				    
-//				    RegCloseKey(hkItem);
-//			    }
-//		    }
-//		    RegCloseKey(hkCLSID);
-//	    }
-//    }
-//	buffer[0] = 0; buffer[1] = 0;
-//
-// // See if we have Unicode function to call...
-//	if (v_fUnicodeAPI)
-//	{
-//	    OLEUIINSERTOBJECTW oidlg = {0};
-//	    oidlg.cbStruct = sizeof(OLEUIINSERTOBJECTW);
-//	    oidlg.dwFlags = dwFlags;
-//	    oidlg.hWndOwner = hwndOwner;
-//	    oidlg.lpszCaption = pwzTitle;
-//	    oidlg.lpszFile = (LPWSTR)buffer;
-//	    oidlg.cchFile = MAX_PATH;
-//		oidlg.lpClsidExclude = lpNewExcludeList;
-//		oidlg.cClsidExclude = nNewExcludeCount;
-//
-//		if (OleUIInsertObjectW(&oidlg) == OLEUI_OK)
-//		{
-//			if ((oidlg.dwFlags & IOF_SELECTCREATENEW) && (oidlg.clsid != GUID_NULL))
-//			{
-//				LPOLESTR posz;
-//				if (SUCCEEDED(ProgIDFromCLSID(oidlg.clsid, &posz)))
-//				{
-//					*pbstrResult = SysAllocString(posz);
-//					CoTaskMemFree(posz);
-//				}
-//                if (ptype) *ptype = IOF_SELECTCREATENEW;
-//			}
-//			else if ((oidlg.dwFlags & IOF_SELECTCREATEFROMFILE) && (buffer[0] != 0))
-//			{
-//				*pbstrResult = SysAllocString((LPWSTR)buffer);
-//                if (ptype) *ptype = IOF_SELECTCREATEFROMFILE;
-//			}
-//        }
-//    }
-//    else
-//    {
-//	    OLEUIINSERTOBJECTA oidlg = {0};
-//	    oidlg.cbStruct = sizeof(OLEUIINSERTOBJECTA);
-//	    oidlg.dwFlags = dwFlags;
-//	    oidlg.hWndOwner = hwndOwner;
-//	    oidlg.lpszCaption = DsoConvertToMBCS(pwzTitle);
-//	    oidlg.lpszFile = (LPSTR)buffer;
-//	    oidlg.cchFile = MAX_PATH;
-//		oidlg.lpClsidExclude = lpNewExcludeList;
-//		oidlg.cClsidExclude = nNewExcludeCount;
-//
-//		if (OleUIInsertObjectA(&oidlg) == OLEUI_OK)
-//		{
-//			if ((oidlg.dwFlags & IOF_SELECTCREATENEW) && (oidlg.clsid != GUID_NULL))
-//			{
-//				LPOLESTR posz;
-//				if (SUCCEEDED(ProgIDFromCLSID(oidlg.clsid, &posz)))
-//				{
-//					*pbstrResult = SysAllocString(posz);
-//					CoTaskMemFree(posz);
-//				}
-//                if (ptype) *ptype = IOF_SELECTCREATENEW;
-//			}
-//			else if ((oidlg.dwFlags & IOF_SELECTCREATEFROMFILE) && (buffer[0] != 0))
-//			{
-//				*pbstrResult = DsoConvertToBSTR((LPSTR)buffer);
-//                if (ptype) *ptype = IOF_SELECTCREATEFROMFILE;
-//			}
-//        }
-//
-//        DsoMemFree((void*)(oidlg.lpszCaption));
-//    }
-//
-//    if (lpNewExcludeList)
-//		delete [] lpNewExcludeList;
-//
-// // If we got a string, then success. All other errors (even user cancel) should
-// // be treated as a general failure (feel free to change this for more full function).
-//    return ((*pbstrResult == NULL) ? E_FAIL : S_OK);
-//}

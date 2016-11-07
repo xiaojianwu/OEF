@@ -130,9 +130,18 @@ void ClibOEF::prev(long hwndContainer)
 	}
 }
 
-void ClibOEF::jump(long hwndContainer, int pageNo)
+HRESULT ClibOEF::GetActiveDocument(long hwndContainer, IDispatch** ppdisp)
 {
-
+	HRESULT hr = S_OK;
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			hr =  info.dso->GetActiveDocument(ppdisp);
+		}
+	}
+	return hr;
 }
 
 void ClibOEF::close(long hwndContainer)

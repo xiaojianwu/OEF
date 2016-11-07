@@ -320,12 +320,42 @@ void CDsoFramerControl::reObtainActiveFrame()
 }
 
 
-void CDsoFramerControl::jumpTo(int pageNo)
+////////////////////////////////////////////////////////////////////////
+// CDsoFramerControl::GetActiveDocument
+//
+//  Returns the automation object currently embedded.
+//
+//  Since we only support a single instance at a time, it might have been
+//  better to call this property Object or simply Document, but VB reserves
+//  the first name for use by the control extender, and IE reserves the second
+//  in its extender, so we decided on the "Office sounding" name. ;-)
+//
+HRESULT CDsoFramerControl::GetActiveDocument(IDispatch** ppdisp)
 {
-	if (m_pDocObjFrame)
+	HRESULT hr = DSO_E_DOCUMENTNOTOPEN;
+	IUnknown* punk;
+
+	ODS("CDsoFramerControl::GetActiveDocument\n");
+	CHECK_NULL_RETURN(ppdisp, E_POINTER); *ppdisp = NULL;
+
+	// Get IDispatch from open document object.
+	if ((m_pDocObjFrame) && (punk = (IUnknown*)(m_pDocObjFrame->GetActiveObject())))
 	{
-		return m_pDocObjFrame->jumpTo(pageNo);
+		// Cannot access object if in print preview..
+		if (m_pDocObjFrame->InPrintPreview())
+			return DSO_E_INMODALSTATE;
+
+		// Ask ip active object for IDispatch interface. If it is not supported on
+		// active object interface, try to get it from OLE object iface...
+		if (FAILED(hr = punk->QueryInterface(IID_IDispatch, (void**)ppdisp)) &&
+			(punk = (IUnknown*)(m_pDocObjFrame->GetOleObject())))
+		{
+			hr = punk->QueryInterface(IID_IDispatch, (void**)ppdisp);
+		}
+		ASSERT(SUCCEEDED(hr));
 	}
+
+	return hr;
 }
 
 

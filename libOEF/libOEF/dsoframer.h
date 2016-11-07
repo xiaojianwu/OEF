@@ -179,7 +179,7 @@ public:
 
 	void reObtainActiveFrame();
 
-	void jumpTo(int pageNo);
+	HRESULT GetActiveDocument(IDispatch** ppdisp);
 
     STDMETHODIMP           InitializeNewInstance();
 

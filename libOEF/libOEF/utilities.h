@@ -23,35 +23,18 @@
 STDAPI_(LPVOID) DsoMemAlloc(DWORD cbSize);
 STDAPI_(void)   DsoMemFree(LPVOID ptr);
 
-// Override new/delete to use our task allocator
-// (removing CRT dependency will improve code performance and size)...
-void * _cdecl operator new(size_t size);
-void  _cdecl operator delete(void *ptr);
-
 ////////////////////////////////////////////////////////////////////////
 // String Manipulation Functions
 //
-STDAPI DsoConvertToUnicodeEx(LPCSTR pszMbcsString, DWORD cbMbcsLen, LPWSTR pwszUnicode, DWORD cbUniLen, UINT uiCodePage);
-STDAPI DsoConvertToMBCSEx(LPCWSTR pwszUnicodeString, DWORD cbUniLen, LPSTR pwszMbcsString, DWORD cbMbcsLen, UINT uiCodePage);
 
-//STDAPI_(LPWSTR) DsoConvertToLPWSTR(LPCSTR pszMbcsString);
-//STDAPI_(BSTR)   DsoConvertToBSTR(LPCSTR pszMbcsString);
+
+STDAPI_(BSTR)   DsoConvertToBSTR(LPWSTR pszMbcsString);
 STDAPI_(LPWSTR) DsoConvertToLPOLESTR(LPCWSTR pwszUnicodeString);
-STDAPI_(LPSTR)  DsoConvertToMBCS(LPCWSTR pwszUnicodeString);
 STDAPI_(UINT)   DsoCompareStringsEx(LPCWSTR pwsz1, INT cch1, LPCWSTR pwsz2, INT cch2);
 STDAPI_(LPWSTR) DsoCopyString(LPCWSTR pwszString);
 STDAPI_(LPWSTR) DsoCopyStringCat(LPCWSTR pwszString1, LPCWSTR pwszString2);
 STDAPI_(LPWSTR) DsoCopyStringCatEx(LPCWSTR pwszBaseString, UINT cStrs, LPCWSTR *ppwszStrs);
 STDAPI_(LPWSTR)  DsoCLSIDtoLPWSTR(REFCLSID clsid);
-
-////////////////////////////////////////////////////////////////////////
-// URL Helpers
-//
-//STDAPI_(BOOL) LooksLikeLocalFile(LPCWSTR pwsz);
-//STDAPI_(BOOL) LooksLikeUNC(LPCWSTR pwsz);
-//STDAPI_(BOOL) LooksLikeHTTP(LPCWSTR pwsz);
-//STDAPI_(BOOL) GetTempPathForURLDownload(WCHAR* pwszURL, WCHAR** ppwszLocalFile);
-//STDAPI URLDownloadFile(LPUNKNOWN punk, WCHAR* pwszURL, WCHAR* pwszLocalFile);
 
 ////////////////////////////////////////////////////////////////////////
 // OLE Conversion Functions
@@ -74,6 +57,8 @@ STDAPI_(BOOL) IsWindowChild(HWND hwndParent, HWND hwndChild);
 //
 //STDAPI DsoGetTypeInfoEx(REFGUID rlibid, LCID lcid, WORD wVerMaj, WORD wVerMin, HMODULE hResource, REFGUID rguid, ITypeInfo** ppti);
 STDAPI DsoDispatchInvoke(LPDISPATCH pdisp, LPOLESTR pwszname, DISPID dspid, WORD wflags, DWORD cargs, VARIANT* rgargs, VARIANT* pvtret);
+HRESULT OLEMethod(int nType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, int cArgs...);
+
 STDAPI DsoReportError(HRESULT hr, LPWSTR pwszCustomMessage, EXCEPINFO* peiDispEx);
 
 ////////////////////////////////////////////////////////////////////////
@@ -82,20 +67,8 @@ STDAPI DsoReportError(HRESULT hr, LPWSTR pwszCustomMessage, EXCEPINFO* peiDispEx
 STDAPI_(BOOL) FFileExists(WCHAR* wzPath);
 STDAPI_(BOOL) FOpenLocalFile(WCHAR* wzFilePath, DWORD dwAccess, DWORD dwShareMode, DWORD dwCreate, HANDLE* phFile);
 STDAPI_(BOOL) FPerformShellOp(DWORD dwOp, WCHAR* wzFrom, WCHAR* wzTo);
-//STDAPI_(BOOL) FGetModuleFileName(HMODULE hModule, WCHAR** wzFileName);
-//STDAPI_(BOOL) FIsIECacheFile(LPWSTR pwszFile);
 STDAPI_(BOOL) FDrawText(HDC hdc, WCHAR* pwsz, LPRECT prc, UINT fmt);
 STDAPI_(BOOL) FSetRegKeyValue(HKEY hk, WCHAR* pwsz);
-
-//STDAPI_(BOOL) FOpenPrinter(LPCWSTR pwszPrinter, LPHANDLE phandle);
-//STDAPI_(BOOL) FGetPrinterSettings(HANDLE hprinter, LPWSTR *ppwszProcessor, LPWSTR *ppwszDevice, LPWSTR *ppwszOutput, LPDEVMODEW *ppdvmode, DWORD *pcbSize);
-
-//STDAPI DsoGetFileFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
-//       LPCWSTR pwzFilter, DWORD dwFiltIdx, LPCWSTR pwszDefExt, LPCWSTR pwszCurrentItem, BOOL fShowSave,
-//       BSTR *pbstrFile, BOOL *pfReadOnly);
-
-//STDAPI DsoGetOleInsertObjectFromUser(HWND hwndOwner, LPCWSTR pwzTitle, DWORD dwFlags, 
-//        BOOL fDocObjectOnly, BOOL fAllowControls, BSTR *pbstrResult, UINT *ptype);
 
 ////////////////////////////////////////////////////////////////////////
 // Common macros -- Used to make code more readable.

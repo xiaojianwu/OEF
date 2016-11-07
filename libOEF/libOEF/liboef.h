@@ -11,6 +11,7 @@
 #endif
 
 #include <wtypes.h>
+#include <Unknwn.h>
 
 class libOEFPrivate;
 
@@ -37,6 +38,8 @@ public:
 
 
 	void jump(long hwndContainer, int pageNo);
+
+	HRESULT GetActiveDocument(long hwndContainer, IDispatch** ppdisp);
 
 	void close(long hwndContainer);
 
