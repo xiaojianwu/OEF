@@ -97,7 +97,7 @@ void ClibOEF::play(long hwndContainer)
 		if (info.dso)
 		{
 			// start the slideshow
-			SendMessage(info.dso->getActiveHWND(), WM_COMMAND, COMMAND_PPT_RUN, NULL);
+			SendMessage(info.dso->GetActiveWindow(), WM_COMMAND, COMMAND_PPT_RUN, NULL);
 
 			info.dso->reObtainActiveFrame();
 		}
@@ -112,7 +112,7 @@ void ClibOEF::next(long hwndContainer)
 		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
 		if (info.dso)
 		{
-			SendMessage(info.dso->getActiveHWND(), WM_COMMAND, COMMAND_PPT_PAGEDOWN, NULL);
+			SendMessage(info.dso->GetActiveWindow(), WM_COMMAND, COMMAND_PPT_PAGEDOWN, NULL);
 		}
 	}
 }
@@ -125,7 +125,7 @@ void ClibOEF::prev(long hwndContainer)
 		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
 		if (info.dso)
 		{
-			SendMessage(info.dso->getActiveHWND(), WM_COMMAND, COMMAND_PPT_PAGEUP, NULL);
+			SendMessage(info.dso->GetActiveWindow(), WM_COMMAND, COMMAND_PPT_PAGEUP, NULL);
 		}
 	}
 }

@@ -111,30 +111,31 @@ BOOL       __fastcall DsoPVarBoolFromPVar(VARIANT* px, BOOL fdef);
 // Debug macros
 //
 #ifdef _DEBUG
+#include <stdio.h>
 
 #define ASSERT(x)  if(!(x)) DebugBreak()
-#define ODS(x)	// OutputDebugString(x)
+#define ODS(x)	 OutputDebugStringA(x)
 
-#define TRACE1(sz, arg1) /*{ \
+#define TRACE1(sz, arg1) { \
 	CHAR ach[1024]; \
-	wsprintf(ach, (sz), (arg1)); \
-	ODS(ach); }*/
+	sprintf_s(ach, (sz), (arg1)); \
+	ODS(ach); }
 
-#define TRACE2(sz, arg1, arg2) /*{ \
+#define TRACE2(sz, arg1, arg2) { \
 	CHAR ach[1024]; \
-	wsprintf(ach, (sz), (arg1), (arg2)); \
-	ODS(ach); }*/
+	sprintf_s(ach, (sz), (arg1), (arg2)); \
+	ODS(ach); }
 
-#define TRACE3(sz, arg1, arg2, arg3) /*{ \
+#define TRACE3(sz, arg1, arg2, arg3) { \
 	CHAR ach[1024]; \
-	wsprintf(ach, (sz), (arg1), (arg2), (arg3)); \
-	ODS(ach); }*/
+	sprintf_s(ach, (sz), (arg1), (arg2), (arg3)); \
+	ODS(ach); }
 
-#define TRACE_LPRECT(sz, lprc) /*{ \
+#define TRACE_LPRECT(sz, lprc) { \
 	CHAR ach[1024]; \
-	wsprintf(ach, "RECT %s - left=%d, top=%d, right=%d, bottom=%d\n", \
+	sprintf_s(ach, "RECT %s - left=%d, top=%d, right=%d, bottom=%d\n", \
 		(sz), (lprc)->left, (lprc)->top, (lprc)->right, (lprc)->bottom); \
-	ODS(ach); }*/
+	ODS(ach); }
 
 #else // !defined(_DEBUG)
 

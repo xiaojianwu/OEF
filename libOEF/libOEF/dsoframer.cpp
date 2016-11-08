@@ -89,7 +89,7 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 	//}
 
 	// Let's make a doc frame for ourselves...
-	if (!(m_pDocObjFrame = CDsoDocObject::CreateInstance((IDsoDocObjectSite*)&m_xDsoDocObjectSite)))
+	if (!(m_pDocObjFrame = CDsoDocObject::CreateInstance(m_hwnd, m_rcLocation)))
 	{
 		return E_OUTOFMEMORY;
 	}
@@ -302,7 +302,7 @@ HRESULT CDsoFramerControl::Close()
 //}
 
 
-HWND CDsoFramerControl::getActiveHWND()
+HWND CDsoFramerControl::GetActiveWindow()
 {
 	if (m_pDocObjFrame)
 	{
@@ -342,8 +342,8 @@ HRESULT CDsoFramerControl::GetActiveDocument(IDispatch** ppdisp)
 	if ((m_pDocObjFrame) && (punk = (IUnknown*)(m_pDocObjFrame->GetActiveObject())))
 	{
 		// Cannot access object if in print preview..
-		if (m_pDocObjFrame->InPrintPreview())
-			return DSO_E_INMODALSTATE;
+		//if (m_pDocObjFrame->InPrintPreview())
+		//	return DSO_E_INMODALSTATE;
 
 		// Ask ip active object for IDispatch interface. If it is not supported on
 		// active object interface, try to get it from OLE object iface...

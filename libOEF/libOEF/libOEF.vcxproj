@@ -175,7 +175,6 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dsofdocobj.cpp" />
-    <ClCompile Include="dsofprint.cpp" />
     <ClCompile Include="dsoframer.cpp" />
     <ClCompile Include="libOEF.cpp" />
     <ClCompile Include="stdafx.cpp" />

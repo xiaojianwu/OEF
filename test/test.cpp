@@ -8,6 +8,8 @@
 
 #include <QAxObject>
 
+#include <QThreadPool>
+
 #pragma comment(lib, "libOEF.lib")
 
 test::test(QWidget *parent)
@@ -20,6 +22,28 @@ test::~test()
 {
 
 }
+
+
+
+class HelloWorldTask : public QRunnable
+{
+public:
+	void setParams(long hwndContainer, RECT rect, QString filePath)
+	{
+		winId = hwndContainer;
+		rectDst = rect;
+		this->filePath = filePath;
+	}
+protected:
+	void run()
+	{
+		ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
+	}
+private:
+	long winId;
+	RECT rectDst;
+	QString filePath;
+};
 
 void test::on_pushButton_open_clicked()
 {
@@ -35,6 +59,10 @@ void test::on_pushButton_open_clicked()
 	rectDst.right = rect.right();
 	rectDst.bottom = rect.bottom();
 	//L"PowerPoint.Show" // MSPowerPoint // L"PowerPoint.ShowMacroEnabled"
+
+	HelloWorldTask *task = new HelloWorldTask();
+	task->setParams(winId, rectDst, filePath);
+	//QThreadPool::globalInstance()->start(task);
 	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
 }
 
@@ -48,21 +76,58 @@ void test::on_pushButton_close_clicked()
 void test::on_pushButton_play_clicked()
 {
 	long winId = ui.widget->winId();
+
 	ClibOEF::instance()->play(winId);
+
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
+
+	QAxObject activeDocument(iface);
+	
+	
 }
 
 void test::on_pushButton_next_clicked()
 {
 	long winId = ui.widget->winId();
-	ClibOEF::instance()->next(winId);
+	//ClibOEF::instance()->next(winId);
+
+
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
+
+	QAxObject activeDocument(iface);
+
+	QAxObject *slideWindow = activeDocument.querySubObject("SlideShowWindow");
+	if (slideWindow)
+	{
+		QAxObject *view = slideWindow->querySubObject("View");
+		if (view)
+		{
+			view->dynamicCall("Next()");
+		}
+	}
 }
 
 void test::on_pushButton_prev_clicked()
 {
 	long winId = ui.widget->winId();
-	ClibOEF::instance()->prev(winId);
+	//ClibOEF::instance()->prev(winId);
 
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
 
+	QAxObject activeDocument(iface);
+
+	QAxObject *slideWindow = activeDocument.querySubObject("SlideShowWindow");
+	if (slideWindow)
+	{
+		QAxObject *view = slideWindow->querySubObject("View");
+		if (view)
+		{
+			view->dynamicCall("Previous()");
+		}
+	}
 
 }
 
@@ -85,7 +150,7 @@ void test::on_pushButton_jump_clicked()
 		QAxObject *view = slideWindow->querySubObject("View");
 		if (view)
 		{
-			view->querySubObject("GotoSlide(int)", pageNo);
+			view->dynamicCall("GotoSlide(int)", pageNo);
 		}
 	}
 }

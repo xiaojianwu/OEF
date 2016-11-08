@@ -56,9 +56,6 @@
     <ClCompile Include="dsofdocobj.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="dsofprint.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="dsoframer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

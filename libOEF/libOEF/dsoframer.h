@@ -152,7 +152,7 @@ public:
 
 	HWND getHWND() { return m_hwnd; }
 
-	HWND getActiveHWND();
+	HWND GetActiveWindow();
 
 	void reObtainActiveFrame();
 

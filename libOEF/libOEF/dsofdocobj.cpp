@@ -35,7 +35,7 @@ CDsoDocObject::CDsoDocObject()
 
 	m_pstgfile = nullptr;
 	m_pcmdCtl = nullptr;
-	m_psiteCtl = nullptr;
+	//m_psiteCtl = nullptr;
 
 	m_pcmdt = nullptr;
 
@@ -52,7 +52,7 @@ CDsoDocObject::~CDsoDocObject(void)
 
     SAFE_RELEASE_INTERFACE(m_pstgroot);
 	SAFE_RELEASE_INTERFACE(m_pcmdCtl);
-	SAFE_RELEASE_INTERFACE(m_psiteCtl);
+	//SAFE_RELEASE_INTERFACE(m_psiteCtl);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -60,11 +60,11 @@ CDsoDocObject::~CDsoDocObject(void)
 //
 //  Static Creation Function.
 //
-CDsoDocObject* CDsoDocObject::CreateInstance(IDsoDocObjectSite* phost)
+CDsoDocObject* CDsoDocObject::CreateInstance(HWND hwndCtl, RECT rect)
 {
     ODS("CDsoDocObject::CreateInstance()\n");
     CDsoDocObject* pnew = new CDsoDocObject();
-    if ((pnew) && FAILED(pnew->InitializeNewInstance(phost)))
+    if ((pnew) && FAILED(pnew->InitializeNewInstance(hwndCtl, rect)))
     {
         pnew->Release();
         pnew = NULL;
@@ -78,17 +78,17 @@ CDsoDocObject* CDsoDocObject::CreateInstance(IDsoDocObjectSite* phost)
 //  Sets up new docobject class. We must a control site to attach this
 //  window to. It will call back to host for menu and IOleCommandTarget.
 //
-STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
+STDMETHODIMP CDsoDocObject::InitializeNewInstance(HWND hwndCtl, RECT rect)
 {
 	HRESULT hr = E_UNEXPECTED;
 	WNDCLASS wndclass;
-    HWND hwndCtl;
+    //HWND hwndCtl;
 
     ODS("CDsoDocObject::InitializeNewInstance()\n");
 
  // We need valid IDsoDocObjectSite...
-   if ((phost == NULL) || FAILED(phost->GetWindow(&hwndCtl)))
-        return hr;
+   //if ((phost == NULL) || FAILED(phost->GetWindow(&hwndCtl)))
+   //     return hr;
 
  // As an AxDoc site, we need a valid parent window...
 	if ((!hwndCtl) || (!IsWindow(hwndCtl)))
@@ -122,7 +122,11 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
 	if (FAILED(hr)) return hr;
 	
  // Get the position RECT (and validate as needed)...
-    hr = phost->GetBorder(&m_rcViewRect);
+    //hr = phost->GetBorder(&m_rcViewRect);
+
+	CopyRect(&m_rcViewRect, &(rect));
+
+
     if (FAILED(hr)) return hr;
 
     if (m_rcViewRect.top > m_rcViewRect.bottom)
@@ -142,14 +146,14 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(IDsoDocObjectSite* phost)
 
  // Save the control info for this object...
 	m_hwndCtl = hwndCtl;
-    (m_psiteCtl = phost)->AddRef();
+    //(m_psiteCtl = phost)->AddRef();
 
-    m_psiteCtl->QueryInterface(IID_IOleCommandTarget, (void**)&m_pcmdCtl);
-    
-    if (m_pwszHostName == NULL)
-        m_pwszHostName = DsoCopyString(L"DsoFramerControl");
+ //   m_psiteCtl->QueryInterface(IID_IOleCommandTarget, (void**)&m_pcmdCtl);
+ //   
+ //   if (m_pwszHostName == NULL)
+ //       m_pwszHostName = DsoCopyString(L"DsoFramerControl");
 
-	m_psiteCtl->GetHostName(&m_pwszHostName);
+	//m_psiteCtl->GetHostName(&m_pwszHostName);
 
 	return S_OK;
 }
@@ -388,15 +392,6 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
              // requires it to IP activate it instead of link & show external...
                 if (IsWordObject())
 			        m_pole->SetHostNames(m_pwszHostName, m_pwszHostName);
-
-
-				// Bind to this ROT entry. 
-				IDispatch *pDisp;
-				hr = pmkfile->BindToObject(pbctx, NULL, IID_IDispatch, (void **)&pDisp);
-				if (SUCCEEDED(hr)) {
-					// Remember IDispatch. 
-					m_pDocDisp = pDisp;
-				}
 
             }
             else pole->SetClientSite(NULL);
@@ -903,7 +898,7 @@ STDMETHODIMP CDsoDocObject::DoOleCommand(DWORD dwOleCmdId, DWORD dwOptions, VARI
 	TRACE2("CDsoDocObject::DoOleCommand(cmd=%d, Opts=%d\n", dwOleCmdId, dwOptions);
 
  // Can't issue OLECOMMANDs when in print preview mode (object calls us)...
-    if (InPrintPreview()) return E_ACCESSDENIED;
+    //if (InPrintPreview()) return E_ACCESSDENIED;
 
  // The server must support IOleCommandTarget, the CmdID being requested, and
  // the command should be enabled. If this is the case, do the command...
@@ -953,8 +948,8 @@ STDMETHODIMP CDsoDocObject::Close()
     m_fInClose = TRUE;
 
  // Make sure we are not in print preview before close...
-    if (InPrintPreview())
-        ExitPrintPreview(TRUE);
+    //if (InPrintPreview())
+    //    ExitPrintPreview(TRUE);
 
  // Go ahead an IP deactivate the object...
 	hr = IPDeactivateView();
@@ -1122,7 +1117,7 @@ void CDsoDocObject::OnNotifyPaletteChanged(HWND hwndPalChg)
 void CDsoDocObject::OnNotifyChangeToolState(BOOL fShowTools)
 {
  // Can't change toolbar state in print preview (sorry)...
-    if (InPrintPreview()) return;
+    //if (InPrintPreview()) return;
 
  // If we want to show/hide toolbars, we can do the following...
 	if (fShowTools != (BOOL)m_fDisplayTools)
@@ -1743,13 +1738,13 @@ DWORD CDsoDocObject::CalcDocNameIndex(LPCWSTR pwszPath)
 //
 //  Site drawing (does nothing in this version).
 //
-void CDsoDocObject::OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize)
-{
-	// Don't have to draw anything, object does all this because we are
-	// always UI active. If we allowed for multiple objects and had some
-	// non-UI active, we would have to do some drawing, but that will not
-	// happen in this sample.
-}
+//void CDsoDocObject::OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize)
+//{
+//	// Don't have to draw anything, object does all this because we are
+//	// always UI active. If we allowed for multiple objects and had some
+//	// non-UI active, we would have to do some drawing, but that will not
+//	// happen in this sample.
+//}
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -1804,10 +1799,10 @@ STDMETHODIMP CDsoDocObject::QueryInterface(REFIID riid, void** ppv)
     {
         *ppv = (IServiceProvider*)&m_xServiceProvider;
     }
-    else if (IID_IContinueCallback == riid)
-    {
-        *ppv = (IContinueCallback*)&m_xContinueCallback;
-    }
+    //else if (IID_IContinueCallback == riid)
+    //{
+    //    *ppv = (IContinueCallback*)&m_xContinueCallback;
+    //}
     //else if (IID_IOlePreviewCallback == riid)
     //{
     //    *ppv = (IOlePreviewCallback*)&m_xPreviewCallback;
@@ -2257,10 +2252,13 @@ STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::InsertMenus(HMENU hMenu, LPOLEMENU
 
 STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::SetMenu(HMENU hMenu, HOLEMENU hOLEMenu, HWND hWndObj)
 {
-	METHOD_PROLOGUE(CDsoDocObject, OleInPlaceFrame);
-    ODS("CDsoDocObject::XOleInPlaceFrame::SetMenu\n");
+	ODS("CDsoDocObject::XOleInPlaceFrame::SetMenu\n");
+	return S_OK;
 
-    pThis->CheckForPPTPreviewChange();
+	METHOD_PROLOGUE(CDsoDocObject, OleInPlaceFrame);
+    
+
+    //pThis->CheckForPPTPreviewChange();
 
  // We really don't do anything here. We will merge the menu and set it
  // later if the menubar is visible or user chooses dropdown from titlebar.
@@ -2299,10 +2297,10 @@ STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::RemoveMenus(HMENU hMenu)
 
 STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::SetStatusText(LPCOLESTR pszText)
 {
-	METHOD_PROLOGUE(CDsoDocObject, OleInPlaceFrame);
+	//METHOD_PROLOGUE(CDsoDocObject, OleInPlaceFrame);
     ODS("CDsoDocObject::XOleInPlaceFrame::SetStatusText\n");
     if ((pszText) && (*pszText)){TRACE1(" Status Text = %S \n", pszText);}
-    return ((pThis->m_psiteCtl) ? pThis->m_psiteCtl->SetStatusText(pszText) : S_OK);
+	return S_OK; //  ((pThis->m_psiteCtl) ? pThis->m_psiteCtl->SetStatusText(pszText) : S_OK);
 }
 
 STDMETHODIMP CDsoDocObject::XOleInPlaceFrame::EnableModeless(BOOL fEnable)
@@ -2357,11 +2355,11 @@ IMPLEMENT_INTERFACE_UNKNOWN(CDsoDocObject, ServiceProvider)
 
 STDMETHODIMP CDsoDocObject::XServiceProvider::QueryService(REFGUID guidService, REFIID riid, void **ppv)
 {
-	METHOD_PROLOGUE(CDsoDocObject, ServiceProvider);
+	//METHOD_PROLOGUE(CDsoDocObject, ServiceProvider);
     ODS("CDsoDocObject::XServiceProvider::QueryService\n");
 
-    if (pThis->m_psiteCtl) // Forward to host control/container...
-        return pThis->m_psiteCtl->QueryService(guidService, riid, ppv);
+    //if (pThis->m_psiteCtl) // Forward to host control/container...
+    //    return pThis->m_psiteCtl->QueryService(guidService, riid, ppv);
 
     return E_NOINTERFACE;
 }
@@ -2374,19 +2372,19 @@ STDMETHODIMP CDsoDocObject::XServiceProvider::QueryService(REFGUID guidService, 
 //   STDMETHODIMP FContinue(void);
 //   STDMETHODIMP FContinuePrinting(LONG cPagesPrinted, LONG nCurrentPage, LPOLESTR pwszPrintStatus);
 //
-IMPLEMENT_INTERFACE_UNKNOWN(CDsoDocObject, ContinueCallback)
-
-STDMETHODIMP CDsoDocObject::XContinueCallback::FContinue(void)
-{ // We don't support asynchronous cancel of printing, but if you wanted to add
-  // such functionality, this is where you could do so...
-    return S_OK;
-}
-
-STDMETHODIMP CDsoDocObject::XContinueCallback::FContinuePrinting(LONG cPagesPrinted, LONG nCurrentPage, LPOLESTR pwszPrintStatus)
-{
-    TRACE3("CDsoDocObject::XContinueCallback::FContinuePrinting(%d, %d, %S)\n", cPagesPrinted, nCurrentPage, pwszPrintStatus);
-    return S_OK;
-}
+//IMPLEMENT_INTERFACE_UNKNOWN(CDsoDocObject, ContinueCallback)
+//
+//STDMETHODIMP CDsoDocObject::XContinueCallback::FContinue(void)
+//{ // We don't support asynchronous cancel of printing, but if you wanted to add
+//  // such functionality, this is where you could do so...
+//    return S_OK;
+//}
+//
+//STDMETHODIMP CDsoDocObject::XContinueCallback::FContinuePrinting(LONG cPagesPrinted, LONG nCurrentPage, LPOLESTR pwszPrintStatus)
+//{
+//    TRACE3("CDsoDocObject::XContinueCallback::FContinuePrinting(%d, %d, %S)\n", cPagesPrinted, nCurrentPage, pwszPrintStatus);
+//    return S_OK;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -2394,21 +2392,21 @@ STDMETHODIMP CDsoDocObject::XContinueCallback::FContinuePrinting(LONG cPagesPrin
 //
 //   STDMETHODIMP Notify(DWORD wStatus, LONG nLastPage, LPOLESTR pwszPreviewStatus);
 //
-IMPLEMENT_INTERFACE_UNKNOWN(CDsoDocObject, PreviewCallback)
-
-STDMETHODIMP CDsoDocObject::XPreviewCallback::Notify(DWORD wStatus, LONG nLastPage, LPOLESTR pwszPreviewStatus)
-{
-	METHOD_PROLOGUE(CDsoDocObject, PreviewCallback);
-    TRACE3("CDsoDocObject::XPreviewCallback::Notify(%d, %d, %S)\n", wStatus, nLastPage, pwszPreviewStatus);
-
-  // The only notification we act on is when the preview is done...
-    if ((wStatus == NOTIFY_FORCECLOSEPREVIEW) ||
-        (wStatus == NOTIFY_FINISHED) ||
-        (wStatus == NOTIFY_UNABLETOPREVIEW))
-            pThis->ExitPrintPreview(FALSE);
-
-    return S_OK;
-}
+//IMPLEMENT_INTERFACE_UNKNOWN(CDsoDocObject, PreviewCallback)
+//
+//STDMETHODIMP CDsoDocObject::XPreviewCallback::Notify(DWORD wStatus, LONG nLastPage, LPOLESTR pwszPreviewStatus)
+//{
+//	METHOD_PROLOGUE(CDsoDocObject, PreviewCallback);
+//    TRACE3("CDsoDocObject::XPreviewCallback::Notify(%d, %d, %S)\n", wStatus, nLastPage, pwszPreviewStatus);
+//
+//  // The only notification we act on is when the preview is done...
+//    if ((wStatus == NOTIFY_FORCECLOSEPREVIEW) ||
+//        (wStatus == NOTIFY_FINISHED) ||
+//        (wStatus == NOTIFY_UNABLETOPREVIEW))
+//            pThis->ExitPrintPreview(FALSE);
+//
+//    return S_OK;
+//}
 
 ////////////////////////////////////////////////////////////////////////
 // CDsoDocObject::FrameWindowProc
@@ -2422,15 +2420,15 @@ LRESULT CDsoDocObject::FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	{
 		switch (msg)
 		{
-		case WM_PAINT:
-			{
-				PAINTSTRUCT ps;
-				RECT rc; GetClientRect(hwnd, &rc);
-				BeginPaint(hwnd, &ps);
-				pbndr->OnDraw(DVASPECT_CONTENT, ps.hdc, (RECT*)&rc, NULL, NULL, TRUE);
-				EndPaint(hwnd, &ps);
-			}
-			return 0;
+		//case WM_PAINT:
+		//	{
+		//		PAINTSTRUCT ps;
+		//		RECT rc; GetClientRect(hwnd, &rc);
+		//		BeginPaint(hwnd, &ps);
+		//		pbndr->OnDraw(DVASPECT_CONTENT, ps.hdc, (RECT*)&rc, NULL, NULL, TRUE);
+		//		EndPaint(hwnd, &ps);
+		//	}
+		//	return 0;
 
 		case WM_NCDESTROY:
 			SetWindowLong(hwnd, GWL_USERDATA, 0);
@@ -2442,13 +2440,13 @@ LRESULT CDsoDocObject::FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				SetFocus(pbndr->m_hwndUIActiveObj);
 			return 0;
 
-        case WM_SYSCOMMAND:
-            if ((wParam & 0xFFF0) == SC_KEYMENU)
-            {
-                if ((pbndr->m_psiteCtl) && (pbndr->m_psiteCtl->SysMenuCommand((UINT)lParam) == S_OK))
-                    return 0;
-            }
-            break;
+        //case WM_SYSCOMMAND:
+        //    if ((wParam & 0xFFF0) == SC_KEYMENU)
+        //    {
+        //        if ((pbndr->m_psiteCtl) && (pbndr->m_psiteCtl->SysMenuCommand((UINT)lParam) == S_OK))
+        //            return 0;
+        //    }
+        //    break;
 
         case WM_ERASEBKGND:
             return 1;

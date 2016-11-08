@@ -90,7 +90,7 @@ public:
     ~CDsoDocObject();
 
  // Static Create Method (Host Provides Site Interface)
-	static CDsoDocObject* CreateInstance(IDsoDocObjectSite* phost);
+	static CDsoDocObject* CreateInstance(HWND hwndCtl, RECT rect);
 
  // IUnknown Implementation
     STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
@@ -156,18 +156,18 @@ public:
     END_INTERFACE_PART(ServiceProvider)
 
  // IContinueCallback Implementation
-    BEGIN_INTERFACE_PART(ContinueCallback , IContinueCallback)
-        STDMETHODIMP FContinue(void);
-        STDMETHODIMP FContinuePrinting(LONG cPagesPrinted, LONG nCurrentPage, LPOLESTR pwszPrintStatus);
-    END_INTERFACE_PART(ContinueCallback)
+    //BEGIN_INTERFACE_PART(ContinueCallback , IContinueCallback)
+    //    STDMETHODIMP FContinue(void);
+    //    STDMETHODIMP FContinuePrinting(LONG cPagesPrinted, LONG nCurrentPage, LPOLESTR pwszPrintStatus);
+    //END_INTERFACE_PART(ContinueCallback)
 
  // IOlePreviewCallback Implementation
-    BEGIN_INTERFACE_PART(PreviewCallback , IOlePreviewCallback)
-        STDMETHODIMP Notify(DWORD wStatus, LONG nLastPage, LPOLESTR pwszPreviewStatus);
-    END_INTERFACE_PART(PreviewCallback)
+    //BEGIN_INTERFACE_PART(PreviewCallback , IOlePreviewCallback)
+    //    STDMETHODIMP Notify(DWORD wStatus, LONG nLastPage, LPOLESTR pwszPreviewStatus);
+    //END_INTERFACE_PART(PreviewCallback)
 
  // DocObject Class Methods IDsoDocObjectSite
-    STDMETHODIMP  InitializeNewInstance(IDsoDocObjectSite* phost);
+    STDMETHODIMP  InitializeNewInstance(HWND hwndCtl, RECT rect);
     STDMETHODIMP  CreateDocObject(REFCLSID rclsid);
     STDMETHODIMP  CreateDocObject(IStorage *pstg);
     STDMETHODIMP  CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts);
@@ -179,9 +179,9 @@ public:
 	BOOL IsDirty();
     STDMETHODIMP  Save();
     STDMETHODIMP  SaveToFile(LPWSTR pwszFile, BOOL fOverwriteFile);
-    STDMETHODIMP  PrintDocument(LPCWSTR pwszPrinter, LPCWSTR pwszOutput, UINT cCopies, UINT nFrom, UINT nTo, BOOL fPromptUser);
+    //STDMETHODIMP  PrintDocument(LPCWSTR pwszPrinter, LPCWSTR pwszOutput, UINT cCopies, UINT nFrom, UINT nTo, BOOL fPromptUser);
     //STDMETHODIMP  StartPrintPreview();
-    STDMETHODIMP  ExitPrintPreview(BOOL fForceExit);
+    //STDMETHODIMP  ExitPrintPreview(BOOL fForceExit);
     STDMETHODIMP  DoOleCommand(DWORD dwOleCmdId, DWORD dwOptions, VARIANT* vInParam, VARIANT* vInOutParam);
     STDMETHODIMP  Close();
 
@@ -203,7 +203,7 @@ public:
 
     inline HWND         GetActiveWindow(){return m_hwndUIActiveObj;}
     inline BOOL         IsReadOnly(){return m_fOpenReadOnly;}
-    inline BOOL         InPrintPreview(){return ((m_pprtprv != NULL) || (m_fInPptSlideShow));}
+    //inline BOOL         InPrintPreview(){return ((m_pprtprv != NULL) || (m_fInPptSlideShow));}
     inline HWND         GetMenuHWND(){return m_hwndMenuObj;}
     inline HMENU        GetActiveMenu(){return m_hMenuActive;}
 	inline HMENU        GetMergedMenu(){return m_hMenuMerged;}
@@ -246,13 +246,13 @@ protected:
     STDMETHODIMP             ValidateDocObjectServer(REFCLSID rclsid);
     BOOL      ValidateFileExtension(WCHAR* pwszFile, WCHAR** ppwszOut);
 
-    void      OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
+    //void      OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
 
     STDMETHODIMP             EnsureOleServerRunning(BOOL fLockRunning);
     void      FreeRunningLock();
     void      ClearMergedMenu();
     DWORD     CalcDocNameIndex(LPCWSTR pwszPath);
-    void      CheckForPPTPreviewChange();
+    //void      CheckForPPTPreviewChange();
 
     static LRESULT  FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -262,7 +262,7 @@ private:
     HWND                 m_hwnd;                // our window
     HWND                 m_hwndCtl;             // The control's window
     RECT                 m_rcViewRect;          // Viewable area (set by host)
-    IDsoDocObjectSite   *m_psiteCtl;            // The control's site interface
+    //IDsoDocObjectSite   *m_psiteCtl;            // The control's site interface
     IOleCommandTarget   *m_pcmdCtl;             // IOCT of host (for frame msgs)
 
     LPWSTR               m_pwszHostName;        // Ole Host Name for container
@@ -277,7 +277,6 @@ private:
     IStorage            *m_pstgfile;            // In-memory file storage
     IStream             *m_pstmview;            // In-memory view info stream
 
-	IDispatch			*m_pDocDisp;
     IOleObject              *m_pole;            // Embedded OLE Object (OLE)
     IOleInPlaceObject       *m_pipobj;          // The IP object methods (OLE)
     IOleInPlaceActiveObject *m_pipactive;       // The UI Active object methods (OLE)

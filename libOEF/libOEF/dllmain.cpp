@@ -7,8 +7,8 @@
 
 HINSTANCE        v_hModule = NULL;   // DLL module handle
 HANDLE           v_hPrivateHeap = NULL;   // Private Memory Heap
-ULONG            v_cLocks = 0;      // Count of server locks
-CRITICAL_SECTION v_csecThreadSynch;
+//ULONG            v_cLocks = 0;      // Count of server locks
+//CRITICAL_SECTION v_csecThreadSynch;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -20,13 +20,13 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	case DLL_PROCESS_ATTACH:
 		v_hModule = hModule;
 		v_hPrivateHeap = HeapCreate(0, 0x1000, 0);
-		InitializeCriticalSection(&v_csecThreadSynch);
+		//InitializeCriticalSection(&v_csecThreadSynch);
 		DisableThreadLibraryCalls(hModule);
 		break;
 
 	case DLL_PROCESS_DETACH:
 		if (v_hPrivateHeap) HeapDestroy(v_hPrivateHeap);
-		DeleteCriticalSection(&v_csecThreadSynch);
+		//DeleteCriticalSection(&v_csecThreadSynch);
 		break;
 	}
 	return TRUE;
