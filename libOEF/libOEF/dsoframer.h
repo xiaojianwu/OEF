@@ -51,9 +51,6 @@ extern ULONG            v_cLocks;
 #define DSO_E_DOCUMENTREADONLY      0x80041105   // "Unable to perform action because document was opened in read-only mode."
 #define DSO_E_REQUIRESMSDAIPP       0x80041106   // "The Microsoft Internet Publishing Provider is not installed, so the URL document cannot be open for write access."
 #define DSO_E_DOCUMENTNOTOPEN       0x80041107   // "No document is open to perform the operation requested."
-#define DSO_E_INMODALSTATE          0x80041108   // "Cannot access document when in modal condition."
-#define DSO_E_NOTBEENSAVED          0x80041109   // "Cannot Save file without a file path."
-#define DSO_E_FRAMEHOOKFAILED       0x8004110A   // "Unable to set frame hook for the parent window."
 #define DSO_E_ERR_MAX               0x8004110B
 
 ////////////////////////////////////////////////////////////////////
@@ -117,20 +114,12 @@ extern ULONG            v_cLocks;
 //  a DocObject host is done in the site object CDsoDocObject, which this 
 //  class creates and uses for the embedding.
 //
-class CDsoFramerControl : public IUnknown
+class CDsoFramerControl
 {
 public:
 	CDsoFramerControl();
     ~CDsoFramerControl(void);
 
-	// IUnknown Implementation
-	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) { return S_OK; }
-	STDMETHODIMP_(ULONG) AddRef(void) { return 0; }
-	STDMETHODIMP_(ULONG) Release(void) { return 0; }
-
-
- // _FramerControl Implementation
-	//HRESULT Activate();
 	HRESULT Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect);
 
 	void    OnResize(RECT dstRect);
@@ -139,142 +128,16 @@ public:
 	//HRESULT Save(VARIANT SaveAsDocument, VARIANT OverwriteExisting);
 	HRESULT Close();
 
- // IDsoDocObjectSite Implementation (for DocObject Callbacks to control)
-    BEGIN_INTERFACE_PART(DsoDocObjectSite, IDsoDocObjectSite)
-        STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void **ppv);
-        STDMETHODIMP GetWindow(HWND* phWnd);
-        STDMETHODIMP GetBorder(LPRECT prcBorder);
-        STDMETHODIMP GetHostName(LPWSTR *ppwszHostName);
-        STDMETHODIMP SysMenuCommand(UINT uiCharCode);
-        STDMETHODIMP SetStatusText(LPCOLESTR pszText);
-    END_INTERFACE_PART(DsoDocObjectSite)
-
-
-	HWND getHWND() { return m_hwnd; }
-
 	HWND GetActiveWindow();
 
-	void reObtainActiveFrame();
+	void ReobtainActiveFrame();
 
 	HRESULT GetActiveDocument(IDispatch** ppdisp);
-
-
- // The control window proceedure is handled through static class method.
-    //static LRESULT ControlWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
- // Force redaw of all child windows...
-	//BOOL InvalidateAllChildWindows(HWND hwnd);
-	//static BOOL InvalidateAllChildWindowsCallback(HWND, LPARAM);
 
  // The variables for the control are kept private but accessible to the
  // nested classes for each interface.
 private:
-
-    ITypeInfo              *m_ptiDispType;         // ITypeInfo Pointer (IDispatch Impl)
-
-    HWND                    m_hwnd;                // our window
-    HWND                    m_hwndParent;          // immediate parent window
-    SIZEL                   m_Size;                // the size of this control  
-    RECT                    m_rcLocation;          // where we at
-
-    IOleClientSite         *m_pClientSite;         // active client site of host containter
-
     CDsoDocObject          *m_pDocObjFrame;        // The Embedding Class
-    CDsoDocObject          *m_pServerLock;         // Optional Server Lock for out-of-proc DocObject
-
-    LPWSTR                  m_pwszHostName;        // Custom name for SetHostNames
-
-    class CDsoFrameHookManager*  m_pHookManager;   // Frame Window Hook Manager Class
-
-    unsigned int        m_fUIActive:1;             // are we UI active or not.
-    unsigned int        m_fHasFocus:1;             // do we have current focus.
-
-    unsigned int        m_fModalState:1;           // are we modal?
-
-    unsigned int        m_fAppActive:1;            // is the app active?
-    unsigned int        m_fComponentActive:1;      // is the component active?
-
-    unsigned int        m_fInControlActivate:1;    // is currently in activation call?
-    unsigned int        m_fInFocusChange:1;        // are we in a focus change?
-    unsigned int        m_fActivateOnStatus:1;     // we need to activate on change of status 
-
-};
-
-
-////////////////////////////////////////////////////////////////////
-// CDsoFrameWindowHook -- Frame Window Hook Class
-//
-//  Used by the control to allow for proper host notification of focus 
-//  and activation events occurring at top-level window frame. Because 
-//  this DocObject host is an OCX, we don't own these notifications and
-//  have to "steal" them from our parent using a subclass.
-//
-//  IMPORTANT: Since the parent frame may exist on a separate thread, this
-//  class does nothing but the hook. The code to notify the active component
-//  is in a separate global class that is shared by all threads.
-//
-class CDsoFrameWindowHook
-{
-public:
-	CDsoFrameWindowHook(){ODS("CDsoFrameWindowHook created\n");m_cHookCount=0;m_hwndTopLevelHost=NULL;m_pfnOrigWndProc=NULL;m_fHostUnicodeWindow=FALSE;}
-	~CDsoFrameWindowHook(){ODS("CDsoFrameWindowHook deleted\n");}
-
-	static CDsoFrameWindowHook* AttachToFrameWindow(HWND hwndParent);
-	HRESULT Detach();
-
-	static CDsoFrameWindowHook* GetHookFromWindow(HWND hwnd);
-	inline void AddRef(){InterlockedIncrement((LONG*)&m_cHookCount);}
-
-    static LRESULT 
-		HostWindowProcHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-protected:
-	DWORD                   m_cHookCount;
-	HWND                    m_hwndTopLevelHost;    // Top-level host window (hooked)
-    WNDPROC                 m_pfnOrigWndProc;
-	BOOL                    m_fHostUnicodeWindow;
-};
-
-// THE MAX NUMBER OF DSOFRAMER CONTROLS PER PROCESS
-#define DSOF_MAX_CONTROLS   10
-
-////////////////////////////////////////////////////////////////////
-// CDsoFrameHookManager -- Hook Manager Class
-//
-//  Used to keep track of which control is active and forward notifications
-//  to it using window messages (to cross thread boundaries).  
-//
-class CDsoFrameHookManager
-{
-public:
-	CDsoFrameHookManager(){ODS("CDsoFrameHookManager created\n"); m_fAppActive=TRUE; m_idxActive=DSOF_MAX_CONTROLS; m_cComponents=0;}
-	~CDsoFrameHookManager(){ODS("CDsoFrameHookManager deleted\n");}
-
-	static CDsoFrameHookManager*
-		RegisterFramerControl(HWND hwndParent, HWND hwndControl);
-
-	HRESULT AddComponent(HWND hwndParent, HWND hwndControl);
-	HRESULT DetachComponent(HWND hwndControl);
-	HRESULT SetActiveComponent(HWND hwndControl);
-	HRESULT OnComponentNotify(DWORD msg, WPARAM wParam, LPARAM lParam);
-
-	inline HWND
-		GetActiveComponentWindow(){return m_pComponents[m_idxActive].hwndControl;}
-
-	inline CDsoFrameWindowHook*
-		GetActiveComponentFrame(){return m_pComponents[m_idxActive].phookFrame;}
-
-	BOOL SendNotifyMessage(HWND hwnd, DWORD msg, WPARAM wParam, LPARAM lParam);
-
-protected:
-	BOOL                    m_fAppActive;
-	DWORD                   m_idxActive;
-	DWORD                   m_cComponents;
-    struct FHOOK_COMPONENTS
-	{
-		HWND hwndControl;
-		CDsoFrameWindowHook *phookFrame;
-	}                       m_pComponents[DSOF_MAX_CONTROLS];
 };
 
 #endif //DS_DSOFRAMER_H

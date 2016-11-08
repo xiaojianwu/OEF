@@ -33,9 +33,6 @@
     <ClInclude Include="dsoframer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ipprevw.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="utilities.h">
       <Filter>头文件</Filter>
     </ClInclude>

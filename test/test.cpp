@@ -83,6 +83,13 @@ void test::on_pushButton_play_clicked()
 	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
 
 	QAxObject activeDocument(iface);
+	QAxObject* SlideShowSettings = activeDocument.querySubObject("SlideShowSettings");
+	if (SlideShowSettings) {
+		//SlideShowSettings->dynamicCall("LoopUntilStopped", QVariant(true));
+	}
+
+	// 返回或设置指定幻灯片放映的放映类型。 ppShowTypeWindow ppShowTypeSpeaker ppShowTypeKiosk
+	//SlideShowSettings->setProperty("ShowType", ppShowTypeSpeaker);
 	
 	
 }
@@ -171,7 +178,8 @@ void test::on_pushButton_open_2_clicked()
 	rectDst.right = rect.right();
 	rectDst.bottom = rect.bottom();
 
-	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
+	// L"Word.Document"
+	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false);
 }
 
 void test::on_pushButton_close_2_clicked()

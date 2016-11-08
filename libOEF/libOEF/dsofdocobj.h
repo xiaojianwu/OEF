@@ -10,7 +10,6 @@
 // Declarations for Interfaces used in DocObject Containment
 //
 #include <docobj.h>    // Standard DocObjects (common to all AxDocs)
-#include "ipprevw.h"   // PrintPreview (for select Office apps)
 
 ////////////////////////////////////////////////////////////////////////
 // Microsoft Office 97-2003 Document Object GUIDs
@@ -155,33 +154,17 @@ public:
         STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void **ppv);
     END_INTERFACE_PART(ServiceProvider)
 
- // IContinueCallback Implementation
-    //BEGIN_INTERFACE_PART(ContinueCallback , IContinueCallback)
-    //    STDMETHODIMP FContinue(void);
-    //    STDMETHODIMP FContinuePrinting(LONG cPagesPrinted, LONG nCurrentPage, LPOLESTR pwszPrintStatus);
-    //END_INTERFACE_PART(ContinueCallback)
-
- // IOlePreviewCallback Implementation
-    //BEGIN_INTERFACE_PART(PreviewCallback , IOlePreviewCallback)
-    //    STDMETHODIMP Notify(DWORD wStatus, LONG nLastPage, LPOLESTR pwszPreviewStatus);
-    //END_INTERFACE_PART(PreviewCallback)
-
  // DocObject Class Methods IDsoDocObjectSite
     STDMETHODIMP  InitializeNewInstance(HWND hwndCtl, RECT rect);
     STDMETHODIMP  CreateDocObject(REFCLSID rclsid);
     STDMETHODIMP  CreateDocObject(IStorage *pstg);
     STDMETHODIMP  CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts);
-    STDMETHODIMP  CreateFromRunningObject(LPUNKNOWN punkObj, LPWSTR pwszObjectName, LPBIND_OPTS pbndopts);
     STDMETHODIMP  IPActivateView();
     STDMETHODIMP  IPDeactivateView();
     STDMETHODIMP  UIActivateView();
     STDMETHODIMP  UIDeactivateView();
 	BOOL IsDirty();
-    STDMETHODIMP  Save();
-    STDMETHODIMP  SaveToFile(LPWSTR pwszFile, BOOL fOverwriteFile);
-    //STDMETHODIMP  PrintDocument(LPCWSTR pwszPrinter, LPCWSTR pwszOutput, UINT cCopies, UINT nFrom, UINT nTo, BOOL fPromptUser);
-    //STDMETHODIMP  StartPrintPreview();
-    //STDMETHODIMP  ExitPrintPreview(BOOL fForceExit);
+
     STDMETHODIMP  DoOleCommand(DWORD dwOleCmdId, DWORD dwOptions, VARIANT* vInParam, VARIANT* vInOutParam);
     STDMETHODIMP  Close();
 
@@ -192,7 +175,6 @@ public:
     void OnNotifyChangeToolState(BOOL fShowTools);
     void OnNotifyControlFocus(BOOL fGotFocus);
 
-    BOOL GetDocumentTypeAndFileExtension(WCHAR** ppwszFileType, WCHAR** ppwszFileExt);
 
  // Inline accessors for control to get IP object info...
     inline IOleInPlaceActiveObject*  GetActiveObject(){return m_pipactive;}
@@ -203,16 +185,7 @@ public:
 
     inline HWND         GetActiveWindow(){return m_hwndUIActiveObj;}
     inline BOOL         IsReadOnly(){return m_fOpenReadOnly;}
-    //inline BOOL         InPrintPreview(){return ((m_pprtprv != NULL) || (m_fInPptSlideShow));}
-    inline HWND         GetMenuHWND(){return m_hwndMenuObj;}
-    inline HMENU        GetActiveMenu(){return m_hMenuActive;}
-	inline HMENU        GetMergedMenu(){return m_hMenuMerged;}
-	inline void         SetMergedMenu(HMENU h){m_hMenuMerged = h;}
-    inline LPCWSTR      GetSourceName(){return m_pwszSourceFile;}
-    inline LPCWSTR      GetSourceDocName(){return ((m_pwszSourceFile) ? &m_pwszSourceFile[m_idxSourceName] : NULL);}
 
-    inline CLSID*       GetServerCLSID(){return &m_clsidObject;}
-    inline BOOL         IsIPActive(){return (m_pipobj != NULL);}
 
 	BOOL IsWordObject()
 	{return ((m_clsidObject == CLSID_WORD_DOCUMENT_DOC) || 
@@ -244,15 +217,9 @@ protected:
     STDMETHODIMP             SaveDocToMoniker(IMoniker *pmk, IBindCtx *pbc, BOOL fKeepLock);
     STDMETHODIMP             SaveDocToFile(LPWSTR pwszFullName, BOOL fKeepLock);
     STDMETHODIMP             ValidateDocObjectServer(REFCLSID rclsid);
-    BOOL      ValidateFileExtension(WCHAR* pwszFile, WCHAR** ppwszOut);
-
-    //void      OnDraw(DWORD dvAspect, HDC hdcDraw, LPRECT prcBounds, LPRECT prcWBounds, HDC hicTargetDev, BOOL fOptimize);
 
     STDMETHODIMP             EnsureOleServerRunning(BOOL fLockRunning);
     void      FreeRunningLock();
-    void      ClearMergedMenu();
-    DWORD     CalcDocNameIndex(LPCWSTR pwszPath);
-    //void      CheckForPPTPreviewChange();
 
     static LRESULT  FrameWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -262,7 +229,6 @@ private:
     HWND                 m_hwnd;                // our window
     HWND                 m_hwndCtl;             // The control's window
     RECT                 m_rcViewRect;          // Viewable area (set by host)
-    //IDsoDocObjectSite   *m_psiteCtl;            // The control's site interface
     IOleCommandTarget   *m_pcmdCtl;             // IOCT of host (for frame msgs)
 
     LPWSTR               m_pwszHostName;        // Ole Host Name for container
@@ -270,7 +236,6 @@ private:
     IMoniker            *m_pmkSourceFile;       // Moniker to original source file 
     IBindCtx            *m_pbctxSourceFile;     // Bind context used to original source file
     IStorage            *m_pstgSourceFile;      // Original File Storage (if open/save file)
-    DWORD                m_idxSourceName;       // Index to doc name in m_pwszSourceFile
 
     CLSID                m_clsidObject;         // CLSID of the embedded object
     IStorage            *m_pstgroot;            // Root temp storage
@@ -282,12 +247,7 @@ private:
     IOleInPlaceActiveObject *m_pipactive;       // The UI Active object methods (OLE)
     IOleDocumentView        *m_pdocv;           // MSO Document View (DocObj)
     IOleCommandTarget       *m_pcmdt;           // MSO Command Target (DocObj)
-    IOleInplacePrintPreview *m_pprtprv;         // MSO Print Preview (DocObj)
 
-    HMENU                m_hMenuActive;         // The menu supplied by embedded object
-    HMENU                m_hMenuMerged;         // The merged menu (set by control host)
-    HOLEMENU             m_holeMenu;            // The OLE Menu Descriptor
-    HWND                 m_hwndMenuObj;         // The window for menu commands
     HWND                 m_hwndIPObject;        // IP active object window
     HWND                 m_hwndUIActiveObj;     // UI Active object window
     DWORD                m_dwObjectThreadID;    // Thread Id of UI server
@@ -301,13 +261,8 @@ private:
     unsigned int         m_fObjectInModalCondition:1;
     unsigned int         m_fObjectIPActive:1;
     unsigned int         m_fObjectUIActive:1;
-    unsigned int         m_fObjectActivateComplete:1;
-	unsigned int         m_fLockedServerRunning:1;
-	unsigned int         m_fLoadedFromAuto:1;
-	unsigned int         m_fInClose:1;
-	unsigned int         m_fAttemptPptPreview:1;
-	unsigned int         m_fInPptSlideShow:1;
 
+	unsigned int         m_fLockedServerRunning:1;
 };
 
 

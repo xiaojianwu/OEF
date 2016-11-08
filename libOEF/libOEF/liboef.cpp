@@ -41,6 +41,18 @@ public:
 	std::map<long, OEInfo> m_hashOE;
 };
 
+// 获取ppt播放窗口句柄
+HWND GetSliderHwnd(HWND hDSOFramerDocWnd)
+{
+
+	// locate the host window of the PowerPoint presentation
+	HWND hChildClass = FindWindowEx(hDSOFramerDocWnd, NULL, L"childClass", NULL);
+	HWND hWndSliderShow = FindWindowEx(hChildClass, NULL, L"childClass", NULL);
+
+	return hWndSliderShow;
+}
+
+
 ClibOEF* ClibOEF::_instance = nullptr;
 ClibOEF *ClibOEF::instance()
 {
@@ -61,6 +73,9 @@ ClibOEF::ClibOEF()
 
 int ClibOEF::open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly, LPWSTR progID)
 {
+	// 防止在统一窗口句柄上打开多次，先关闭
+	close(hwndContainer);
+
 	libOEFPrivate::OEInfo info;
 	info.hwndContainer = hwndContainer;
 
@@ -77,16 +92,6 @@ int ClibOEF::open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly,
 #define COMMAND_PPT_PAGEUP	 (0x1018a)
 
 
-// 获取ppt播放窗口句柄
-HWND GetSliderHwnd(HWND hDSOFramerDocWnd)
-{
-
-	// locate the host window of the PowerPoint presentation
-	HWND hChildClass = FindWindowEx(hDSOFramerDocWnd, NULL, L"childClass", NULL);
-	HWND hWndSliderShow = FindWindowEx(hChildClass, NULL, L"childClass", NULL);
-
-	return hWndSliderShow;
-}
 
 
 void ClibOEF::play(long hwndContainer)
@@ -99,7 +104,7 @@ void ClibOEF::play(long hwndContainer)
 			// start the slideshow
 			SendMessage(info.dso->GetActiveWindow(), WM_COMMAND, COMMAND_PPT_RUN, NULL);
 
-			info.dso->reObtainActiveFrame();
+			info.dso->ReobtainActiveFrame();
 		}
 	}
 }
@@ -157,18 +162,6 @@ void ClibOEF::close(long hwndContainer)
 	}
 }
 
-//void ClibOEF::active(long hwndContainer)
-//{
-//	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
-//	{
-//		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
-//		if (info.dso)
-//		{
-//			info.dso->Activate();
-//		}
-//	}
-//}
-
 void ClibOEF::resize(long hwndContainer, RECT rect)
 {
 	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
@@ -179,10 +172,5 @@ void ClibOEF::resize(long hwndContainer, RECT rect)
 			info.dso->OnResize(rect);
 		}
 	}
-}
-
-void ClibOEF::release()
-{
-
 }
 

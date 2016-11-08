@@ -24,29 +24,23 @@ private:
 public:
 	static ClibOEF* instance();
 
-	void release();
-
-
 public:
-	int open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly = true, LPWSTR progID = L"");
+	int open(long hwndContainer, RECT rect, LPWSTR filePath, bool readOnly = true, LPWSTR progID = nullptr);
 
 	void play(long hwndContainer);
 
-	void next(long hwndContainer);
-
-	void prev(long hwndContainer);
-
-
-	void jump(long hwndContainer, int pageNo);
 
 	HRESULT GetActiveDocument(long hwndContainer, IDispatch** ppdisp);
 
 	void close(long hwndContainer);
 
-	//void active(long hwndContainer);
-
 	void resize(long hwndContainer, RECT rect);
 
+private:
+
+	void next(long hwndContainer);
+
+	void prev(long hwndContainer);
 
 private:
 	libOEFPrivate *d_ptr;

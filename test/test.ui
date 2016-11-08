@@ -62,13 +62,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_quit">
-        <property name="text">
-         <string>退出</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
     <item>
@@ -79,7 +72,7 @@
       <item>
        <widget class="QPushButton" name="pushButton_open_2">
         <property name="text">
-         <string>打开</string>
+         <string>打开Word</string>
         </property>
        </widget>
       </item>

@@ -38,7 +38,6 @@ public:
     QPushButton *pushButton_next;
     QPushButton *pushButton_jump;
     QPushButton *pushButton_close;
-    QPushButton *pushButton_quit;
     QVBoxLayout *verticalLayout_2;
     QWidget *widget_2;
     QPushButton *pushButton_open_2;
@@ -96,11 +95,6 @@ public:
 
         verticalLayout->addWidget(pushButton_close);
 
-        pushButton_quit = new QPushButton(centralWidget);
-        pushButton_quit->setObjectName(QStringLiteral("pushButton_quit"));
-
-        verticalLayout->addWidget(pushButton_quit);
-
 
         horizontalLayout->addLayout(verticalLayout);
 
@@ -151,8 +145,7 @@ public:
         pushButton_next->setText(QApplication::translate("testClass", "\344\270\213\344\270\200\351\241\265", 0));
         pushButton_jump->setText(QApplication::translate("testClass", "\350\267\263\350\275\254", 0));
         pushButton_close->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));
-        pushButton_quit->setText(QApplication::translate("testClass", "\351\200\200\345\207\272", 0));
-        pushButton_open_2->setText(QApplication::translate("testClass", "\346\211\223\345\274\200", 0));
+        pushButton_open_2->setText(QApplication::translate("testClass", "\346\211\223\345\274\200Word", 0));
         pushButton_close_2->setText(QApplication::translate("testClass", "\345\205\263\351\227\255", 0));
     } // retranslateUi
 
