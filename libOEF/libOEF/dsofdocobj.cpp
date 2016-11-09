@@ -139,6 +139,9 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(HWND hwndCtl, RECT rect)
 	// Save the control info for this object...
 	m_hwndCtl = hwndCtl;
 
+	if (m_pwszHostName == NULL)
+		m_pwszHostName = DsoCopyString(L"DsoFramerControl");
+
 	return S_OK;
 }
 

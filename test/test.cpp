@@ -23,28 +23,6 @@ test::~test()
 
 }
 
-
-
-class HelloWorldTask : public QRunnable
-{
-public:
-	void setParams(long hwndContainer, RECT rect, QString filePath)
-	{
-		winId = hwndContainer;
-		rectDst = rect;
-		this->filePath = filePath;
-	}
-protected:
-	void run()
-	{
-		ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
-	}
-private:
-	long winId;
-	RECT rectDst;
-	QString filePath;
-};
-
 void test::on_pushButton_open_clicked()
 {
 	QString filePath = QFileDialog::getOpenFileName();
@@ -60,9 +38,6 @@ void test::on_pushButton_open_clicked()
 	rectDst.bottom = rect.bottom();
 	//L"PowerPoint.Show" // MSPowerPoint // L"PowerPoint.ShowMacroEnabled"
 
-	HelloWorldTask *task = new HelloWorldTask();
-	task->setParams(winId, rectDst, filePath);
-	//QThreadPool::globalInstance()->start(task);
 	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
 }
 
