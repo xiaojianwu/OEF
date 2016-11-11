@@ -158,7 +158,7 @@ void test::on_pushButton_open_2_clicked()
 
 	ClibOEF::instance()->showToolbars(winId, false);
 
-
+	// Document ½Ó¿Ú 
 	IDispatch* iface = nullptr;
 	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
 
@@ -168,6 +168,24 @@ void test::on_pushButton_open_2_clicked()
 	}
 
 	m_activeDocumentRight = new QAxObject(iface);
+
+	QAxObject *pActiveWindow = m_activeDocumentRight->querySubObject("ActiveWindow");
+	if (!pActiveWindow)
+	{
+		return;
+	}
+	QAxObject *pView = pActiveWindow->querySubObject("View");
+	if (!pView)
+	{
+		return;
+	}
+	QAxObject *pZoom = pView->querySubObject("Zoom");
+	if (!pZoom)
+	{
+		return;
+	}
+	QVariant pagetFit = pZoom->property("PageFit");
+	pZoom->setProperty("PageFit", QVariant(2));
 }
 
 void test::on_pushButton_next_2_clicked()
@@ -179,7 +197,8 @@ void test::on_pushButton_next_2_clicked()
 	if (activeWindow)
 	{
 		//activeWindow->dynamicCall("PageScroll(int)", 1);
-		activeWindow->dynamicCall("SmallScroll(int)", 40);
+		//activeWindow->dynamicCall("SmallScroll(int)", 48);
+		activeWindow->dynamicCall("LargeScroll(int)", 1);
 	}
 }
 
@@ -192,7 +211,8 @@ void test::on_pushButton_prev_2_clicked()
 	if (activeWindow)
 	{
 		//activeWindow->dynamicCall("PageScroll(int, int)", 0, 1);
-		activeWindow->dynamicCall("SmallScroll(int, int)", 0, 40);
+		//activeWindow->dynamicCall("SmallScroll(int, int)", 0, 48);
+		activeWindow->dynamicCall("LargeScroll(int, int)", 0, 1);
 	}
 }
 
@@ -220,7 +240,7 @@ void test::resizeEvent(QResizeEvent *event)
 	rectDst.top = rect.top();
 	rectDst.right = rect.right();
 	rectDst.bottom = rect.bottom();
-
+	ClibOEF::instance()->resize(winId, rectDst);
 
 
 	long winId2 = ui.widget_2->winId();
@@ -232,7 +252,7 @@ void test::resizeEvent(QResizeEvent *event)
 	rectDst2.right = rect2.right();
 	rectDst2.bottom = rect2.bottom();
 
-	ClibOEF::instance()->resize(winId, rectDst);
+	
 	ClibOEF::instance()->resize(winId2, rectDst2);
 }
 
