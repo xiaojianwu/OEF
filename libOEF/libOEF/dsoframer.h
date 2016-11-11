@@ -43,14 +43,20 @@ extern ULONG            v_cLocks;
 ////////////////////////////////////////////////////////////////////
 // Custom Errors - we support a very limited set of custom error messages
 //
-#define DSO_E_ERR_BASE              0x80041100
-#define DSO_E_UNKNOWN               0x80041101   // "An unknown problem has occurred."
-#define DSO_E_INVALIDPROGID         0x80041102   // "The ProgID/Template could not be found or is not associated with a COM server."
-#define DSO_E_INVALIDSERVER         0x80041103   // "The associated COM server does not support ActiveX Document embedding."
-#define DSO_E_COMMANDNOTSUPPORTED   0x80041104   // "The command is not supported by the document server."
-#define DSO_E_DOCUMENTREADONLY      0x80041105   // "Unable to perform action because document was opened in read-only mode."
-#define DSO_E_REQUIRESMSDAIPP       0x80041106   // "The Microsoft Internet Publishing Provider is not installed, so the URL document cannot be open for write access."
-#define DSO_E_DOCUMENTNOTOPEN       0x80041107   // "No document is open to perform the operation requested."
+#define DSO_E_ERR_BASE					0x80041100
+#define DSO_E_UNKNOWN					10001   // "An unknown problem has occurred."
+#define DSO_E_INVALIDPROGID				10002   // "The ProgID/Template could not be found or is not associated with a COM server."
+#define DSO_E_INVALIDSERVER				10003   // "The associated COM server does not support ActiveX Document embedding."
+#define DSO_E_COMMANDNOTSUPPORTED		10004   // "The command is not supported by the document server."
+#define DSO_E_CONTAINER_IS_NOT_WINDOW   10005   // "Container is not window."
+#define DSO_E_CREATE_STORAGE_FAILED     10006   // "create storage failed."
+#define DSO_E_CREATE_DOCWND_FAILED      10007   // "create doc window failed."
+#define DSO_E_IPACTIVATEVIEW_FAILED     10008   // "IPActivateView failed."
+#define DSO_E_WIN32_ACCESSVIOLATION     10009   // "WIN32_ACCESSVIOLATION."
+#define DSO_E_CANNT_GET_FILE_CLASS_ID   10010   // "getFileClass failed."
+
+
+#define DSO_E_DOCUMENTNOTOPEN			10100   // "No document is open to perform the operation requested."
 #define DSO_E_ERR_MAX               0x8004110B
 
 ////////////////////////////////////////////////////////////////////
@@ -120,7 +126,7 @@ public:
 	CDsoFramerControl();
     ~CDsoFramerControl(void);
 
-	HRESULT Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect);
+	int Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect);
 
 	void    OnResize(RECT dstRect);
 
@@ -133,6 +139,8 @@ public:
 	void ReobtainActiveFrame();
 
 	HRESULT GetActiveDocument(IDispatch** ppdisp);
+
+	void ShowToolbars(BOOL bShow);
 
  // The variables for the control are kept private but accessible to the
  // nested classes for each interface.

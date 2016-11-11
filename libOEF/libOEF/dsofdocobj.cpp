@@ -57,15 +57,20 @@ CDsoDocObject::~CDsoDocObject(void)
 //
 //  Static Creation Function.
 //
-CDsoDocObject* CDsoDocObject::CreateInstance(HWND hwndCtl, RECT rect)
+CDsoDocObject* CDsoDocObject::CreateInstance(HWND hwndCtl, RECT rect, int &errCode)
 {
 	ODS("CDsoDocObject::CreateInstance()\n");
 	CDsoDocObject* pnew = new CDsoDocObject();
-	if ((pnew) && FAILED(pnew->InitializeNewInstance(hwndCtl, rect)))
+	if (pnew)
 	{
-		pnew->Release();
-		pnew = NULL;
+		errCode = pnew->InitializeNewInstance(hwndCtl, rect);
+		if (errCode != 0)
+		{
+			pnew->Release();
+			pnew = NULL;
+		}
 	}
+
 	return pnew;
 }
 
@@ -75,21 +80,22 @@ CDsoDocObject* CDsoDocObject::CreateInstance(HWND hwndCtl, RECT rect)
 //  Sets up new docobject class. We must a control site to attach this
 //  window to. It will call back to host for menu and IOleCommandTarget.
 //
-STDMETHODIMP CDsoDocObject::InitializeNewInstance(HWND hwndCtl, RECT rect)
+int CDsoDocObject::InitializeNewInstance(HWND hwndCtl, RECT rect)
 {
 	HRESULT hr = E_UNEXPECTED;
+	int errCode = 0;
 	WNDCLASS wndclass;
 
 	ODS("CDsoDocObject::InitializeNewInstance()\n");
 
 	// As an AxDoc site, we need a valid parent window...
 	if ((!hwndCtl) || (!IsWindow(hwndCtl)))
-		return hr;
+		return DSO_E_CONTAINER_IS_NOT_WINDOW;
 
 	// Create a temp storage for this docobj site (if one already exists, bomb out)...
 	if ((m_pstgroot) || FAILED(hr = StgCreateDocfile(NULL, STGM_TRANSACTED | STGM_READWRITE |
 		STGM_SHARE_EXCLUSIVE | STGM_CREATE | STGM_DELETEONRELEASE, 0, &m_pstgroot)))
-		return hr;
+		return DSO_E_CREATE_STORAGE_FAILED;
 
 	// If our site window class has not been registered before, we should register it...
 
@@ -142,7 +148,7 @@ STDMETHODIMP CDsoDocObject::InitializeNewInstance(HWND hwndCtl, RECT rect)
 	if (m_pwszHostName == NULL)
 		m_pwszHostName = DsoCopyString(L"DsoFramerControl");
 
-	return S_OK;
+	return errCode;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -293,7 +299,7 @@ STDMETHODIMP CDsoDocObject::CreateDocObject(IStorage *pstg)
 //       the (old) Binder behavior, and should *by spec* always work, but is a bit 
 //       clunky since we open a copy, not the real file.
 //
-STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts)
+int CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts)
 {
 	HRESULT			hr;
 	CLSID           clsid;
@@ -316,7 +322,7 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
 	// and GetClassFile failed, then we error out...
 	if (FAILED(GetClassFile(pwszFile, &clsid)) && !(fLoadFromAltCLSID))
 	{
-		return DSO_E_INVALIDSERVER;
+		return DSO_E_CANNT_GET_FILE_CLASS_ID;
 	}
 
 
@@ -432,8 +438,9 @@ STDMETHODIMP CDsoDocObject::CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPB
 //
 //  Activates the object for inplace viewing.
 //
-STDMETHODIMP CDsoDocObject::IPActivateView()
+int CDsoDocObject::IPActivateView()
 {
+	int errCode = DSO_E_IPACTIVATEVIEW_FAILED;
 	HRESULT hr = E_UNEXPECTED;
 	ODS("CDsoDocObject::IPActivateView()\n");
 	ASSERT(m_pole);
@@ -487,9 +494,16 @@ STDMETHODIMP CDsoDocObject::IPActivateView()
 
 	// Go ahead and UI activate now...
 	if (SUCCEEDED(hr))
+	{
 		hr = UIActivateView();
+		if (SUCCEEDED(hr))
+		{
+			errCode = 0;
+		}
+	}
+		
 
-	return hr;
+	return errCode;
 }
 
 ////////////////////////////////////////////////////////////////////////

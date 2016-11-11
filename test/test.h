@@ -32,7 +32,8 @@ void on_pushButton_jump_clicked();
 void on_pushButton_open_2_clicked();
 void on_pushButton_close_2_clicked();
 
-//void on_pushButton_quit_clicked();
+void on_pushButton_next_2_clicked();
+void on_pushButton_prev_2_clicked();
 
 
 

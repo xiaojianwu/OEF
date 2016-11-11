@@ -33,9 +33,12 @@ public:
 		long hwndContainer;
 		CDsoFramerControl* dso;
 
+		IDispatch* ifaceActiveWindow;
+
 		OEInfo()
 		{
 			dso = nullptr;
+			ifaceActiveWindow = nullptr;
 		}
 	};
 	std::map<long, OEInfo> m_hashOE;
@@ -158,6 +161,19 @@ void ClibOEF::close(long hwndContainer)
 		{
 			info.dso->Close();
 			d_ptr->m_hashOE.erase(hwndContainer);
+		}
+	}
+}
+
+
+void ClibOEF::showToolbars(long hwndContainer, bool bShow)
+{
+	if (d_ptr->m_hashOE.find(hwndContainer) != d_ptr->m_hashOE.end())
+	{
+		libOEFPrivate::OEInfo info = d_ptr->m_hashOE[hwndContainer];
+		if (info.dso)
+		{
+			info.dso->ShowToolbars(bShow);
 		}
 	}
 }

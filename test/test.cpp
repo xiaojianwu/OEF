@@ -8,7 +8,7 @@
 
 #include <QAxObject>
 
-#include <QThreadPool>
+#include <QMessageBox>
 
 #pragma comment(lib, "libOEF.lib")
 
@@ -38,7 +38,15 @@ void test::on_pushButton_open_clicked()
 	rectDst.bottom = rect.bottom();
 	//L"PowerPoint.Show" // MSPowerPoint // L"PowerPoint.ShowMacroEnabled"
 
-	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
+	int code = ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false/*, L"PowerPoint.Show"*/);
+	if (code != 0)
+	{
+		QMessageBox::warning(this, "error", QString("code=%1").arg(code));
+		return;
+	}
+
+	ClibOEF::instance()->play(winId);
+
 }
 
 void test::on_pushButton_close_clicked()
@@ -54,17 +62,30 @@ void test::on_pushButton_play_clicked()
 
 	ClibOEF::instance()->play(winId);
 
+
+	return;
+
 	IDispatch* iface = nullptr;
 	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
 
-	QAxObject activeDocument(iface);
-	QAxObject* SlideShowSettings = activeDocument.querySubObject("SlideShowSettings");
-	if (SlideShowSettings) {
-		//SlideShowSettings->dynamicCall("LoopUntilStopped", QVariant(true));
+	if (FAILED(hr) && iface == nullptr)
+	{
+		return;
 	}
 
-	// 返回或设置指定幻灯片放映的放映类型。 ppShowTypeWindow ppShowTypeSpeaker ppShowTypeKiosk
-	//SlideShowSettings->setProperty("ShowType", ppShowTypeSpeaker);
+	// Presentation 
+	QAxObject activeDocument(iface);
+
+	QAxObject* SlideShowSettings = activeDocument.querySubObject("SlideShowSettings");
+	if (SlideShowSettings) {
+		SlideShowSettings->setProperty("LoopUntilStopped", QVariant(true));
+		SlideShowSettings->setProperty("ShowType", QVariant(1));
+		//// 返回或设置指定幻灯片放映的放映类型。 ppShowTypeWindow ppShowTypeSpeaker ppShowTypeKiosk
+		////SlideShowSettings->setProperty("ShowType", ppShowTypeSpeaker);
+		SlideShowSettings->dynamicCall("Run()");
+	}
+
+
 	
 	
 }
@@ -155,6 +176,52 @@ void test::on_pushButton_open_2_clicked()
 
 	// L"Word.Document"
 	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false);
+
+	ClibOEF::instance()->showToolbars(winId, false);
+}
+
+void test::on_pushButton_next_2_clicked()
+{
+	long winId = ui.widget_2->winId();
+
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
+
+	if (FAILED(hr) && iface == nullptr)
+	{
+		return;
+	}
+
+	QAxObject activeDocument(iface);
+
+	QAxObject *activeWindow = activeDocument.querySubObject("ActiveWindow");
+
+	if (activeWindow)
+	{
+		activeWindow->dynamicCall("PageScroll(int)", 1);
+	}
+}
+
+void test::on_pushButton_prev_2_clicked()
+{
+	long winId = ui.widget_2->winId();
+
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
+
+	if (FAILED(hr) && iface == nullptr)
+	{
+		return;
+	}
+
+	QAxObject activeDocument(iface);
+
+	QAxObject *activeWindow = activeDocument.querySubObject("ActiveWindow");
+
+	if (activeWindow)
+	{
+		activeWindow->dynamicCall("PageScroll(int, int)", 0, 1);
+	}
 }
 
 void test::on_pushButton_close_2_clicked()

@@ -36,6 +36,8 @@ public:
 
 	void resize(long hwndContainer, RECT rect);
 
+	void showToolbars(long hwndContainer, bool bShow);
+
 private:
 
 	void next(long hwndContainer);

@@ -26,9 +26,10 @@ CDsoFramerControl::~CDsoFramerControl(void)
 //  We keep a lock on the original file (unless opened read-only) so the
 //  user cannot tell we don't have the file "open".
 //
-HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect)
+int CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR pwszAltProgId, HWND hwndParent, RECT dstRect)
 {
-	HRESULT   hr;
+	int   errCode = 0;
+	HRESULT hr = S_OK;
 	CLSID     clsidAlt = GUID_NULL;
 
 	BIND_OPTS bopts = { sizeof(BIND_OPTS), BIND_MAYBOTHERUSER, 0, 10000 };
@@ -42,9 +43,10 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 	}
 
 	// Let's make a doc frame for ourselves...
-	if (!(m_pDocObjFrame = CDsoDocObject::CreateInstance(hwndParent, dstRect)))
+	m_pDocObjFrame = CDsoDocObject::CreateInstance(hwndParent, dstRect, errCode);
+	if (errCode != 0)
 	{
-		return E_OUTOFMEMORY;
+		return errCode;
 	}
 
 	// Setup the bind options based on read-only flag....
@@ -52,20 +54,21 @@ HRESULT CDsoFramerControl::Open(LPWSTR pwszDocument, BOOL fOpenReadOnly, LPWSTR 
 
 	SEH_TRY
 		// Normally user gives a string that is path to file...
-		hr = m_pDocObjFrame->CreateFromFile(pwszDocument, clsidAlt, &bopts);
+		errCode = m_pDocObjFrame->CreateFromFile(pwszDocument, clsidAlt, &bopts);
 		// If successful, we can activate the object...
-		if (SUCCEEDED(hr))
+		if (errCode == 0)
 		{
-			hr = m_pDocObjFrame->IPActivateView();
+			errCode = m_pDocObjFrame->IPActivateView();
 		}
 	SEH_EXCEPT(hr)
 		// Force a close if an error occurred...
 		if (FAILED(hr))
 		{
+			errCode = DSO_E_WIN32_ACCESSVIOLATION;
 			Close();
 		}
 
-	return hr;
+	return errCode;
 }
 
 
@@ -154,4 +157,11 @@ HRESULT CDsoFramerControl::GetActiveDocument(IDispatch** ppdisp)
 	}
 
 	return hr;
+}
+
+
+void CDsoFramerControl::ShowToolbars(BOOL bShow)
+{
+	if (m_pDocObjFrame)
+		m_pDocObjFrame->OnNotifyChangeToolState(bShow);
 }

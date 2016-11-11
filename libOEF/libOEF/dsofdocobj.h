@@ -89,7 +89,7 @@ public:
     ~CDsoDocObject();
 
  // Static Create Method (Host Provides Site Interface)
-	static CDsoDocObject* CreateInstance(HWND hwndCtl, RECT rect);
+	static CDsoDocObject* CreateInstance(HWND hwndCtl, RECT rect, int &errCode);
 
  // IUnknown Implementation
     STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
@@ -155,11 +155,11 @@ public:
     END_INTERFACE_PART(ServiceProvider)
 
  // DocObject Class Methods IDsoDocObjectSite
-    STDMETHODIMP  InitializeNewInstance(HWND hwndCtl, RECT rect);
+    int  InitializeNewInstance(HWND hwndCtl, RECT rect);
     STDMETHODIMP  CreateDocObject(REFCLSID rclsid);
     STDMETHODIMP  CreateDocObject(IStorage *pstg);
-    STDMETHODIMP  CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts);
-    STDMETHODIMP  IPActivateView();
+    int  CreateFromFile(LPWSTR pwszFile, REFCLSID rclsid, LPBIND_OPTS pbndopts);
+    int  IPActivateView();
     STDMETHODIMP  IPDeactivateView();
     STDMETHODIMP  UIActivateView();
     STDMETHODIMP  UIDeactivateView();
