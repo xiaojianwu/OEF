@@ -47,7 +47,8 @@ protected:
 private:
 	Ui::testClass ui;
 
-	QAxObject *m_pptApp;
+	QAxObject *m_activeDocumentLeft;
+	QAxObject *m_activeDocumentRight;
 };
 
 #endif // TEST_H

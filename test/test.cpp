@@ -16,6 +16,9 @@ test::test(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+
+	m_activeDocumentLeft = nullptr;
+	m_activeDocumentRight = nullptr;
 }
 
 test::~test()
@@ -38,12 +41,22 @@ void test::on_pushButton_open_clicked()
 	rectDst.bottom = rect.bottom();
 	//L"PowerPoint.Show" // MSPowerPoint // L"PowerPoint.ShowMacroEnabled"
 
-	int code = ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false/*, L"PowerPoint.Show"*/);
+	int code = ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false, L"PowerPoint.Show");
 	if (code != 0)
 	{
 		QMessageBox::warning(this, "error", QString("code=%1").arg(code));
 		return;
 	}
+
+	IDispatch* iface = nullptr;
+	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
+
+	if (FAILED(hr) && iface == nullptr)
+	{
+		return;
+	}
+
+	m_activeDocumentLeft = new QAxObject(iface);
 
 	ClibOEF::instance()->play(winId);
 
@@ -51,6 +64,11 @@ void test::on_pushButton_open_clicked()
 
 void test::on_pushButton_close_clicked()
 {
+
+	delete m_activeDocumentLeft;
+	m_activeDocumentLeft = nullptr;
+
+
 	long winId = ui.widget->winId();
 	ClibOEF::instance()->close(winId);
 }
@@ -65,43 +83,20 @@ void test::on_pushButton_play_clicked()
 
 	return;
 
-	IDispatch* iface = nullptr;
-	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
-
-	if (FAILED(hr) && iface == nullptr)
-	{
-		return;
-	}
-
-	// Presentation 
-	QAxObject activeDocument(iface);
-
-	QAxObject* SlideShowSettings = activeDocument.querySubObject("SlideShowSettings");
+	QAxObject* SlideShowSettings = m_activeDocumentLeft->querySubObject("SlideShowSettings");
 	if (SlideShowSettings) {
 		SlideShowSettings->setProperty("LoopUntilStopped", QVariant(true));
 		SlideShowSettings->setProperty("ShowType", QVariant(1));
 		//// 返回或设置指定幻灯片放映的放映类型。 ppShowTypeWindow ppShowTypeSpeaker ppShowTypeKiosk
 		////SlideShowSettings->setProperty("ShowType", ppShowTypeSpeaker);
 		SlideShowSettings->dynamicCall("Run()");
-	}
-
-
-	
-	
+	}	
 }
 
 void test::on_pushButton_next_clicked()
 {
-	long winId = ui.widget->winId();
-	//ClibOEF::instance()->next(winId);
 
-
-	IDispatch* iface = nullptr;
-	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
-
-	QAxObject activeDocument(iface);
-
-	QAxObject *slideWindow = activeDocument.querySubObject("SlideShowWindow");
+	QAxObject *slideWindow = m_activeDocumentLeft->querySubObject("SlideShowWindow");
 	if (slideWindow)
 	{
 		QAxObject *view = slideWindow->querySubObject("View");
@@ -114,15 +109,7 @@ void test::on_pushButton_next_clicked()
 
 void test::on_pushButton_prev_clicked()
 {
-	long winId = ui.widget->winId();
-	//ClibOEF::instance()->prev(winId);
-
-	IDispatch* iface = nullptr;
-	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
-
-	QAxObject activeDocument(iface);
-
-	QAxObject *slideWindow = activeDocument.querySubObject("SlideShowWindow");
+	QAxObject *slideWindow = m_activeDocumentLeft->querySubObject("SlideShowWindow");
 	if (slideWindow)
 	{
 		QAxObject *view = slideWindow->querySubObject("View");
@@ -138,16 +125,8 @@ void test::on_pushButton_prev_clicked()
 void test::on_pushButton_jump_clicked()
 {
 	int pageNo = QInputDialog::getInt(this, tr("Jump to"), tr("page:"), 2, 1, 99);
-	long winId = ui.widget->winId();
 
-	//ClibOEF::instance()->jump(winId, pageNo);
-
-	IDispatch* iface = nullptr;
-	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
-
-	QAxObject activeDocument(iface);
-
-	QAxObject *slideWindow = activeDocument.querySubObject("SlideShowWindow");
+	QAxObject *slideWindow = m_activeDocumentLeft->querySubObject("SlideShowWindow");
 	if (slideWindow)
 	{
 		QAxObject *view = slideWindow->querySubObject("View");
@@ -178,11 +157,7 @@ void test::on_pushButton_open_2_clicked()
 	ClibOEF::instance()->open(winId, rectDst, (LPWSTR)filePath.utf16(), false);
 
 	ClibOEF::instance()->showToolbars(winId, false);
-}
 
-void test::on_pushButton_next_2_clicked()
-{
-	long winId = ui.widget_2->winId();
 
 	IDispatch* iface = nullptr;
 	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
@@ -192,13 +167,19 @@ void test::on_pushButton_next_2_clicked()
 		return;
 	}
 
-	QAxObject activeDocument(iface);
+	m_activeDocumentRight = new QAxObject(iface);
+}
 
-	QAxObject *activeWindow = activeDocument.querySubObject("ActiveWindow");
+void test::on_pushButton_next_2_clicked()
+{
+	long winId = ui.widget_2->winId();
+
+	QAxObject *activeWindow = m_activeDocumentRight->querySubObject("ActiveWindow");
 
 	if (activeWindow)
 	{
-		activeWindow->dynamicCall("PageScroll(int)", 1);
+		//activeWindow->dynamicCall("PageScroll(int)", 1);
+		activeWindow->dynamicCall("SmallScroll(int)", 40);
 	}
 }
 
@@ -206,28 +187,24 @@ void test::on_pushButton_prev_2_clicked()
 {
 	long winId = ui.widget_2->winId();
 
-	IDispatch* iface = nullptr;
-	HRESULT hr = ClibOEF::instance()->GetActiveDocument(winId, &(iface));
-
-	if (FAILED(hr) && iface == nullptr)
-	{
-		return;
-	}
-
-	QAxObject activeDocument(iface);
-
-	QAxObject *activeWindow = activeDocument.querySubObject("ActiveWindow");
+	QAxObject *activeWindow = m_activeDocumentRight->querySubObject("ActiveWindow");
 
 	if (activeWindow)
 	{
-		activeWindow->dynamicCall("PageScroll(int, int)", 0, 1);
+		//activeWindow->dynamicCall("PageScroll(int, int)", 0, 1);
+		activeWindow->dynamicCall("SmallScroll(int, int)", 0, 40);
 	}
 }
 
 void test::on_pushButton_close_2_clicked()
 {
+	delete m_activeDocumentRight;
+	m_activeDocumentRight = nullptr;
+
 	long winId = ui.widget_2->winId();
 	ClibOEF::instance()->close(winId);
+
+
 }
 
 
